@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  useWindowDimensions,
   Animated,
   Pressable,
   Alert,
@@ -13,6 +14,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -32,155 +35,20 @@ import {
   Heart,
   Tag,
   X,
+  FileText,
+  ClipboardCheck,
 } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useQuery } from '@tanstack/react-query';
 import { useAppTheme, themeStyle } from '@/utils/theme';
+import { api } from '@/utils/api';
+import { VideoPlayerContainer } from '@/components/VideoPlayerContainer';
 
-const { width: W } = Dimensions.get('window');
+// reactive W defined inside component
 
-const COURSES: Record<string, any> = {
-  '1': {
-    title: 'Full Stack SDE BootCamp 2026',
-    instructor: 'Priya Kapoor',
-    instructorRole: 'Ex-Google | IIT Bombay',
-    rating: 4.9,
-    reviews: 2140,
-    students: '12.4K',
-    duration: '48h',
-    lessons: 120,
-    level: 'Intermediate',
-    price: 4999,
-    orig: 9999,
-    img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=90',
-    tag: 'BESTSELLER',
-    about:
-      'Master Data Structures, Algorithms, System Design, and Full Stack Web Development. Crack top tech companies like Google, Amazon, Microsoft and more with our battle-tested curriculum used by 12,000+ placed students.',
-    skills: [
-      'Data Structures & Algorithms',
-      'System Design',
-      'React & Node.js',
-      'SQL & MongoDB',
-      'LLD & HLD',
-      'Mock Interviews',
-    ],
-  },
-  '2': {
-    title: 'UPSC Civil Services Complete 2026',
-    instructor: 'Dr. Ananya Singh',
-    instructorRole: 'IAS Officer | IIT Delhi',
-    rating: 4.9,
-    reviews: 1820,
-    students: '7.8K',
-    duration: '120h',
-    lessons: 280,
-    level: 'Advanced',
-    price: 7999,
-    orig: 14999,
-    img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=900&q=90',
-    tag: 'PREMIUM',
-    about:
-      'Complete UPSC preparation covering Prelims, Mains, and Interview. Daily current affairs, answer writing practice, and 1-on-1 mentorship from an IAS officer.',
-    skills: [
-      'General Studies I–IV',
-      'Current Affairs',
-      'Essay Writing',
-      'CSAT',
-      'Optional Subject',
-      'Interview Prep',
-    ],
-  },
-  '3': {
-    title: 'Quantitative Aptitude Master',
-    instructor: 'Rohit Verma',
-    instructorRole: 'CAT 99.8 Percentile',
-    rating: 4.8,
-    reviews: 1540,
-    students: '9.2K',
-    duration: '32h',
-    lessons: 90,
-    level: 'Beginner',
-    price: 2999,
-    orig: 5999,
-    img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=900&q=90',
-    tag: 'TOP RATED',
-    about:
-      'Master Quantitative Aptitude for CAT, GMAT, banking and campus placements. 5000+ practice problems with detailed video solutions.',
-    skills: [
-      'Number Theory',
-      'Algebra',
-      'Geometry',
-      'Probability',
-      'Data Interpretation',
-      'Speed Maths',
-    ],
-  },
-  '4': {
-    title: 'IBPS Bank PO Complete Prep',
-    instructor: 'Suresh Bansal',
-    instructorRole: 'Ex-SBI PO | 10 yrs exp',
-    rating: 4.7,
-    reviews: 980,
-    students: '5.1K',
-    duration: '60h',
-    lessons: 160,
-    level: 'Intermediate',
-    price: 3499,
-    orig: 6999,
-    img: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=900&q=90',
-    tag: 'HOT',
-    about:
-      'Complete prep for IBPS PO, SBI PO, and RRB PO. Covers Quantitative Aptitude, Reasoning, English, and General Awareness with 2000+ practice questions.',
-    skills: [
-      'Quantitative Aptitude',
-      'Logical Reasoning',
-      'English Language',
-      'General Awareness',
-      'Computer Knowledge',
-      'Banking GK',
-    ],
-  },
-};
-
-const CURRICULUM = [
-  {
-    section: 'Section 1: Foundation',
-    lessons: [
-      { title: 'Welcome & Course Roadmap', dur: '8 min', free: true },
-      { title: 'Setting Up Your Environment', dur: '15 min', free: true },
-      { title: 'Time & Space Complexity', dur: '22 min', free: false },
-    ],
-  },
-  {
-    section: 'Section 2: Arrays & Strings',
-    lessons: [
-      { title: 'Array Fundamentals', dur: '18 min', free: false },
-      { title: 'Two Pointer Technique', dur: '25 min', free: false },
-      { title: 'Sliding Window Problems', dur: '30 min', free: false },
-      { title: 'String Manipulation', dur: '20 min', free: false },
-    ],
-  },
-  {
-    section: 'Section 3: Trees & Graphs',
-    lessons: [
-      { title: 'Binary Trees Deep Dive', dur: '35 min', free: false },
-      { title: 'Graph BFS & DFS', dur: '28 min', free: false },
-      { title: 'Topological Sort', dur: '22 min', free: false },
-    ],
-  },
-  {
-    section: 'Section 4: System Design',
-    lessons: [
-      { title: 'System Design Primer', dur: '40 min', free: false },
-      { title: 'Design Instagram', dur: '55 min', free: false },
-      { title: 'Design URL Shortener', dur: '45 min', free: false },
-    ],
-  },
-];
-
-const TABS = ['overview', 'curriculum', 'instructor'] as const;
+const TABS = ['overview', 'curriculum', 'tests', 'instructor'] as const;
 type Tab = (typeof TABS)[number];
 
 function InfoChip({ icon, text, delay }: { icon: React.ReactNode; text: string; delay: number }) {
@@ -259,11 +127,15 @@ function CurriculumSection({
   sIndex,
   openSection,
   setOpenSection,
+  onPressLesson,
+  activeLessonId,
 }: {
-  sec: { section: string; lessons: { title: string; dur: string; free: boolean }[] };
+  sec: { section: string; lessons: any[] };
   sIndex: number;
   openSection: number | null;
   setOpenSection: (n: number | null) => void;
+  onPressLesson: (lesson: any) => void;
+  activeLessonId?: string;
 }) {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -314,63 +186,70 @@ function CurriculumSection({
       </TouchableOpacity>
       {openSection === sIndex && (
         <View style={themeStyle({ borderTopWidth: 1, borderTopColor: '#111118' })}>
-          {sec.lessons.map((lesson, li) => (
-            <View
-              key={li}
-              style={themeStyle({
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderBottomWidth: li < sec.lessons.length - 1 ? 1 : 0,
-                borderBottomColor: '#111118',
-              })}
-            >
-              <View
+          {sec.lessons.map((lesson, li) => {
+            const isActive = activeLessonId && activeLessonId === lesson.id;
+            return (
+              <TouchableOpacity
+                key={li}
+                onPress={() => onPressLesson(lesson)}
                 style={themeStyle({
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  backgroundColor: lesson.free ? '#1E1B4B' : '#2D2D4E',
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderBottomWidth: li < sec.lessons.length - 1 ? 1 : 0,
+                  borderBottomColor: '#111118',
+                  backgroundColor: isActive ? 'rgba(79,70,229,0.14)' : 'transparent',
                 })}
               >
-                {lesson.free ? (
-                  <Play size={12} color="#818CF8" fill="#818CF8" />
-                ) : (
-                  <Lock size={12} color="#4B5563" />
-                )}
-              </View>
-              <View style={themeStyle({ flex: 1 })}>
-                <Text
+                <View
                   style={themeStyle({
-                    fontWeight: '500',
-                    fontSize: 13,
-                    color: lesson.free ? '#E2E8F0' : '#64748B',
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    backgroundColor: isActive ? '#4F46E5' : lesson.free ? '#1E1B4B' : '#2D2D4E',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   })}
                 >
-                  {lesson.title}
-                </Text>
-                {lesson.free && (
+                  {isActive ? (
+                    <Play size={12} color="#FFFFFF" fill="#FFFFFF" />
+                  ) : lesson.free ? (
+                    <Play size={12} color="#818CF8" fill="#818CF8" />
+                  ) : (
+                    <Lock size={12} color="#4B5563" />
+                  )}
+                </View>
+                <View style={themeStyle({ flex: 1 })}>
                   <Text
                     style={themeStyle({
-                      fontWeight: '600',
-                      fontSize: 10,
-                      color: '#10B981',
-                      marginTop: 2,
+                      fontWeight: '500',
+                      fontSize: 13,
+                      color: isActive ? '#FFFFFF' : lesson.free ? '#E2E8F0' : '#64748B',
                     })}
                   >
-                    FREE PREVIEW
+                    {lesson.title}
                   </Text>
-                )}
-              </View>
-              <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#4B5563' })}>
-                {lesson.dur}
-              </Text>
-            </View>
-          ))}
+                  {lesson.free && !isActive && (
+                    <Text
+                      style={themeStyle({
+                        fontWeight: '600',
+                        fontSize: 10,
+                        color: '#10B981',
+                        marginTop: 2,
+                      })}
+                    >
+                      FREE PREVIEW
+                    </Text>
+                  )}
+                </View>
+                <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#4B5563' })}>
+                  {lesson.dur}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </Animated.View>
@@ -378,6 +257,7 @@ function CurriculumSection({
 }
 
 export default function CourseDetail() {
+  const { width: W } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -394,44 +274,7 @@ export default function CourseDetail() {
   const modalSlide = useRef(new Animated.Value(300)).current;
   const modalFade = useRef(new Animated.Value(0)).current;
 
-  const template = COURSES[id as string] || {
-    ...COURSES['1'],
-    title: 'Course',
-    instructor: 'IAs Academy Faculty',
-    instructorRole: 'Expert instructor',
-    rating: 0,
-    reviews: 0,
-    students: 'New',
-    tag: 'COURSE',
-    about: 'Course details are being prepared.',
-  };
-  const { data: apiCourse } = useQuery({
-    queryKey: ['course', id],
-    enabled: Boolean(id),
-    retry: false,
-    queryFn: async () => {
-      const response = await fetch(`/api/courses?id=${encodeURIComponent(String(id))}`);
-      if (!response.ok) throw new Error('Failed to load course');
-      return response.json();
-    },
-  });
-  const course = apiCourse
-    ? {
-        ...template,
-        title: apiCourse.title,
-        instructor: apiCourse.instructor,
-        duration: apiCourse.duration,
-        lessons: Number(apiCourse.lesson_count) || template.lessons,
-        level: apiCourse.level,
-        price: Number(apiCourse.price),
-        orig: Math.max(Number(apiCourse.price), template.orig),
-        img: apiCourse.thumbnail_url || template.img,
-        about: apiCourse.description || template.about,
-        tag: apiCourse.category_name?.toUpperCase() || template.tag,
-      }
-    : template;
-  const discount = Math.round((1 - course.price / course.orig) * 100);
-
+  // Animation refs — must be declared before any early returns (Rules of Hooks)
   const heroFade = useRef(new Animated.Value(0)).current;
   const contentFade = useRef(new Animated.Value(0)).current;
   const contentSlide = useRef(new Animated.Value(30)).current;
@@ -441,26 +284,111 @@ export default function CourseDetail() {
   const tabIndicator = useRef(new Animated.Value(0)).current;
   const submitSc = useRef(new Animated.Value(1)).current;
 
+  const { data: apiCourse, isLoading: courseLoading } = useQuery<any>({
+    queryKey: ['course', id],
+    enabled: Boolean(id),
+    retry: false,
+    queryFn: () => api(`/api/courses?id=${encodeURIComponent(String(id))}`),
+  });
+
+  const [activeLesson, setActiveLesson] = useState<any>(null);
+
+  const { data: enrollments = [] } = useQuery<any[]>({
+    queryKey: ['my-enrollments'],
+    retry: false,
+    queryFn: () => api('/api/enroll'),
+  });
+
+  const { data: dbLessons = [] } = useQuery<any[]>({
+    queryKey: ['course-lessons', id],
+    enabled: Boolean(id),
+    retry: false,
+    queryFn: () => api(`/api/courses/lessons?course_id=${id}`),
+  });
+
+  const { data: mockTests = [], isLoading: testsLoading } = useQuery<any[]>({
+    queryKey: ['course-tests', id],
+    enabled: Boolean(id),
+    retry: false,
+    queryFn: () => api(`/api/courses/tests?course_id=${id}`),
+  });
+
+  const { data: testAttempts = [] } = useQuery<any[]>({
+    queryKey: ['my-test-attempts', id],
+    enabled: Boolean(id) && enrollments.some((e: any) => String(e.course_id) === String(id)),
+    retry: false,
+    queryFn: () => api(`/api/courses/tests/attempts?course_id=${id}`),
+  });
+
   useEffect(() => {
-    Animated.sequence([
-      Animated.timing(heroFade, { toValue: 1, duration: 400, useNativeDriver: true }),
-      Animated.parallel([
-        Animated.timing(contentFade, { toValue: 1, duration: 400, useNativeDriver: true }),
-        Animated.spring(contentSlide, {
-          toValue: 0,
-          tension: 80,
-          friction: 10,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-    Animated.loop(
+    if (!courseLoading && apiCourse) {
       Animated.sequence([
-        Animated.timing(playPulse, { toValue: 1.14, duration: 800, useNativeDriver: true }),
-        Animated.timing(playPulse, { toValue: 1, duration: 800, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
+        Animated.timing(heroFade, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(contentFade, { toValue: 1, duration: 400, useNativeDriver: true }),
+          Animated.spring(contentSlide, {
+            toValue: 0,
+            tension: 80,
+            friction: 10,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(playPulse, { toValue: 1.14, duration: 800, useNativeDriver: true }),
+          Animated.timing(playPulse, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [courseLoading, apiCourse]);
+
+  if (courseLoading || !apiCourse) {
+    return (
+      <View style={themeStyle({ flex: 1, backgroundColor: '#0A0A0F', justifyContent: 'center', alignItems: 'center' })}>
+        <ActivityIndicator size="large" color="#4F46E5" />
+      </View>
+    );
+  }
+
+  const enrollmentCount = enrollments.filter((e: any) => String(e.course_id) === String(id)).length;
+
+  const course = {
+    title: apiCourse.title,
+    instructor: apiCourse.instructor || 'IAs Academy Faculty',
+    instructorRole: apiCourse.instructor_role || apiCourse.instructor || 'Instructor',
+    rating: apiCourse.rating || null,
+    reviews: apiCourse.review_count || null,
+    students: enrollmentCount > 0 ? `${enrollmentCount}` : null,
+    duration: apiCourse.duration || 'Self-paced',
+    lessons: Number(apiCourse.lesson_count) || dbLessons.length,
+    level: apiCourse.level || 'General',
+    price: Number(apiCourse.price) || 0,
+    orig: apiCourse.original_price ? Number(apiCourse.original_price) : null,
+    img: apiCourse.thumbnail_url || 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400',
+    about: apiCourse.description || 'Course details are being prepared.',
+    tag: apiCourse.category_name?.toUpperCase() || 'COURSE',
+    skills: apiCourse.skills || [],
+    instructorBio: apiCourse.instructor_bio || null,
+  };
+
+  const discount = course.orig && course.orig > course.price ? Math.round((1 - course.price / course.orig) * 100) : 0;
+  const isEnrolled = enrollments.some((e: any) => String(e.course_id) === String(id));
+
+  const displayCurriculum = [
+    {
+      section: 'Course Syllabus',
+      lessons: dbLessons.map((l: any, index: number) => ({
+        id: l.id || l.$id,
+        title: l.title,
+        dur: '',
+        free: index === 0 && !isEnrolled,
+        video_url: l.video_url,
+        content: l.content,
+      })),
+    }
+  ];
+
 
   const openModal = () => {
     setEnrollCode('');
@@ -519,36 +447,30 @@ export default function CourseDetail() {
       Animated.spring(submitSc, { toValue: 1, useNativeDriver: true, tension: 400 }),
     ]).start();
     try {
-      const res = await fetch('/api/enroll', {
+      const data = await api('/api/enroll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ courseId: id, code: trimmed }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        closeModal();
-        setTimeout(() => {
-          const msg = data.already_enrolled
-            ? `You're already enrolled in ${course.title}!`
-            : data.discount_pct > 0
-              ? `🎉 ${data.discount_pct}% discount applied! You're enrolled in ${course.title}.`
-              : `🎉 You've successfully enrolled in ${course.title}.`;
-          Alert.alert('Enrolled!', msg, [{ text: 'Start Learning', onPress: () => router.back() }]);
-        }, 300);
-      } else {
-        setCodeError(data.error || 'Invalid code. Please try again.');
-      }
-    } catch {
-      setCodeError('Something went wrong. Please try again.');
+      closeModal();
+      setTimeout(() => {
+        const msg = data.already_enrolled
+          ? `You're already enrolled in ${course.title}!`
+          : data.discount_pct > 0
+            ? `🎉 ${data.discount_pct}% discount applied! You're enrolled in ${course.title}.`
+            : `🎉 You've successfully enrolled in ${course.title}.`;
+        Alert.alert('Enrolled!', msg, [{ text: 'Start Learning', onPress: () => router.back() }]);
+      }, 300);
+    } catch (err: any) {
+      setCodeError(err?.message || 'Invalid code. Please try again.');
     } finally {
       setEnrolling(false);
     }
   };
 
-  const tabW = (W - 40 - 8) / 3;
+  const tabW = (W - 40 - 8) / 4;
   const indicatorLeft = tabIndicator.interpolate({
-    inputRange: [0, 1, 2],
-    outputRange: [4, tabW + 4, tabW * 2 + 4],
+    inputRange: [0, 1, 2, 3],
+    outputRange: [4, tabW + 4, tabW * 2 + 4, tabW * 3 + 4],
   });
 
   return (
@@ -557,11 +479,15 @@ export default function CourseDetail() {
 
       {/* Hero */}
       <Animated.View style={themeStyle({ opacity: heroFade, height: 260, position: 'relative' })}>
-        <Image
-          source={{ uri: course.img }}
-          style={themeStyle({ width: '100%', height: '100%' })}
-          contentFit="cover"
-        />
+        {activeLesson?.video_url ? (
+          <VideoPlayerContainer videoUrl={activeLesson.video_url} />
+        ) : (
+          <Image
+            source={{ uri: course.img }}
+            style={themeStyle({ width: '100%', height: '100%' })}
+            contentFit="cover"
+          />
+        )}
 
         <LinearGradient
           colors={['rgba(0,0,0,0.5)', 'transparent', 'rgba(10,10,15,0.97)']}
@@ -632,29 +558,43 @@ export default function CourseDetail() {
             />
           </Animated.View>
         </Pressable>
-        <Animated.View
-          style={themeStyle({
-            position: 'absolute',
-            bottom: 20,
-            left: W / 2 - 28,
-            transform: [{ scale: playPulse }],
-          })}
-        >
-          <TouchableOpacity
+        {!activeLesson && (
+          <Animated.View
             style={themeStyle({
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: 'rgba(79,70,229,0.92)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 2,
-              borderColor: 'rgba(255,255,255,0.3)',
+              position: 'absolute',
+              bottom: 20,
+              left: W / 2 - 28,
+              transform: [{ scale: playPulse }],
             })}
           >
-            <Play size={22} color="#FFFFFF" fill="#FFFFFF" />
-          </TouchableOpacity>
-        </Animated.View>
+            <TouchableOpacity
+              onPress={() => {
+                if (!isEnrolled) {
+                  Alert.alert('Enrollment Required', 'Please enroll in this course to watch lessons.');
+                  return;
+                }
+                const firstLesson = displayCurriculum[0]?.lessons[0];
+                if (firstLesson) {
+                  setActiveLesson(firstLesson);
+                } else {
+                  Alert.alert('No Lessons', 'This course does not have any lessons available.');
+                }
+              }}
+              style={themeStyle({
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: 'rgba(79,70,229,0.92)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 2,
+                borderColor: 'rgba(255,255,255,0.3)',
+              })}
+            >
+              <Play size={22} color="#FFFFFF" fill="#FFFFFF" />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </Animated.View>
 
       <ScrollView
@@ -668,6 +608,74 @@ export default function CourseDetail() {
             transform: [{ translateY: contentSlide }],
           })}
         >
+          {activeLesson && (
+            <View
+              style={themeStyle({
+                backgroundColor: '#1E1B4B',
+                borderRadius: 20,
+                padding: 16,
+                marginBottom: 20,
+                borderWidth: 1,
+                borderColor: '#4F46E5',
+              })}
+            >
+              <View style={themeStyle({ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 })}>
+                <View style={themeStyle({ flex: 1, marginRight: 8 })}>
+                  <Text style={themeStyle({ fontWeight: '700', fontSize: 10, color: '#818CF8', textTransform: 'uppercase', letterSpacing: 0.5 })}>
+                    Now Playing
+                  </Text>
+                  <Text style={themeStyle({ fontWeight: '800', fontSize: 15, color: '#FFFFFF', marginTop: 2 })}>
+                    {activeLesson.title}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setActiveLesson(null)}
+                  style={themeStyle({
+                    padding: 4,
+                    borderRadius: 99,
+                    backgroundColor: '#2D2D4E',
+                  })}
+                >
+                  <X size={14} color="#A5B4FC" />
+                </TouchableOpacity>
+              </View>
+
+              {activeLesson.content ? (
+                <View style={themeStyle({ borderTopWidth: 1, borderTopColor: '#2D2D4E', paddingTop: 10, marginBottom: 12 })}>
+                  <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#A5B4FC', marginBottom: 4 })}>
+                    Lesson Notes & Description:
+                  </Text>
+                  <Text style={themeStyle({ fontWeight: '400', fontSize: 13, color: '#CBD5E1', lineHeight: 18 })}>
+                    {activeLesson.content}
+                  </Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity
+                onPress={() => {
+                  const pdfUrl = activeLesson.pdf_url || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+                  Linking.openURL(pdfUrl).catch(() => {
+                    Alert.alert('Error', 'Unable to open PDF link.');
+                  });
+                }}
+                style={themeStyle({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  backgroundColor: '#4F46E5',
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                })}
+              >
+                <FileText size={14} color="#FFFFFF" />
+                <Text style={themeStyle({ fontWeight: '700', fontSize: 13, color: '#FFFFFF' })}>
+                  Download PDF Study Material
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <Text
             style={themeStyle({
               fontWeight: '800',
@@ -702,7 +710,7 @@ export default function CourseDetail() {
                 {course.rating}
               </Text>
               <Text style={themeStyle({ fontWeight: '400', fontSize: 12, color: '#4B5563' })}>
-                ({course.reviews.toLocaleString()})
+                ({(course.reviews ?? 0).toLocaleString()})
               </Text>
             </View>
             <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 4 })}>
@@ -863,15 +871,142 @@ export default function CourseDetail() {
 
           {tab === 'curriculum' && (
             <View style={themeStyle({ gap: 10 })}>
-              {CURRICULUM.map((sec, si) => (
+              {displayCurriculum.map((sec, si) => (
                 <CurriculumSection
                   key={si}
                   sec={sec}
                   sIndex={si}
                   openSection={openSection}
                   setOpenSection={setOpenSection}
+                  onPressLesson={(lesson) => {
+                    if (isEnrolled || lesson.free) {
+                      setActiveLesson(lesson);
+                    } else {
+                      Alert.alert('Enrollment Required', 'Please enroll in this course to watch this lesson.');
+                    }
+                  }}
+                  activeLessonId={activeLesson?.id}
                 />
               ))}
+            </View>
+          )}
+
+          {tab === 'tests' && (
+            <View style={themeStyle({ gap: 14 })}>
+              {testsLoading ? (
+                <ActivityIndicator color="#4F46E5" style={{ marginVertical: 30 }} />
+              ) : mockTests.length === 0 ? (
+                <View style={themeStyle({ alignItems: 'center', paddingVertical: 40, backgroundColor: '#1A1A2E', borderRadius: 20, borderWidth: 1, borderColor: '#2D2D4E' })}>
+                  <Text style={themeStyle({ fontSize: 40, marginBottom: 8 })}>📝</Text>
+                  <Text style={themeStyle({ fontWeight: '700', fontSize: 15, color: '#FFFFFF' })}>No mock tests yet</Text>
+                  <Text style={themeStyle({ fontWeight: '400', fontSize: 12, color: '#4B5563', textAlign: 'center', paddingHorizontal: 20 })}>
+                    Tests are being prepared for this course. Check back soon!
+                  </Text>
+                </View>
+              ) : (
+                mockTests.map((test) => {
+                  const attempt = testAttempts.find((a: any) => String(a.test_id) === String(test.id));
+                  return (
+                    <View
+                      key={test.id}
+                      style={themeStyle({
+                        backgroundColor: '#1A1A2E',
+                        borderRadius: 18,
+                        padding: 16,
+                        borderWidth: 1,
+                        borderColor: '#2D2D4E',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      })}
+                    >
+                      <View style={themeStyle({ flex: 1, marginRight: 16 })}>
+                        <Text style={themeStyle({ fontWeight: '700', fontSize: 14, color: '#FFFFFF' })}>
+                          {test.title}
+                        </Text>
+                        <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6 })}>
+                          <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 4 })}>
+                            <Clock size={12} color="#4B5563" />
+                            <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#4B5563' })}>
+                              {test.duration_minutes} Mins
+                            </Text>
+                          </View>
+                          <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 4 })}>
+                            <ClipboardCheck size={12} color="#4B5563" />
+                            <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#4B5563' })}>
+                              {test.question_count} Questions
+                            </Text>
+                          </View>
+                        </View>
+
+                        {attempt && (
+                          <View style={themeStyle({ alignSelf: 'flex-start', backgroundColor: '#10B98120', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginTop: 10 })}>
+                            <Text style={themeStyle({ fontWeight: '700', fontSize: 10, color: '#10B981' })}>
+                              PREVIOUS SCORE: {attempt.score}%
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {isEnrolled ? (
+                        <View style={themeStyle({ gap: 8 })}>
+                          {attempt ? (
+                            <>
+                              <TouchableOpacity
+                                onPress={() => router.push(`/test/result?testId=${test.id}&attemptId=${attempt.id}` as any)}
+                                style={themeStyle({
+                                  backgroundColor: '#2D2D4E',
+                                  borderRadius: 10,
+                                  paddingHorizontal: 16,
+                                  paddingVertical: 8,
+                                  alignItems: 'center',
+                                })}
+                              >
+                                <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#A5B4FC' })}>
+                                  Review
+                                </Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                onPress={() => router.push(`/test/${test.id}` as any)}
+                                style={themeStyle({
+                                  backgroundColor: 'rgba(79,70,229,0.15)',
+                                  borderRadius: 10,
+                                  paddingHorizontal: 16,
+                                  paddingVertical: 6,
+                                  alignItems: 'center',
+                                })}
+                              >
+                                <Text style={themeStyle({ fontWeight: '600', fontSize: 11, color: '#818CF8' })}>
+                                  Retake
+                                </Text>
+                              </TouchableOpacity>
+                            </>
+                          ) : (
+                            <TouchableOpacity
+                              onPress={() => router.push(`/test/${test.id}` as any)}
+                              style={themeStyle({
+                                backgroundColor: '#4F46E5',
+                                borderRadius: 10,
+                                paddingHorizontal: 16,
+                                paddingVertical: 10,
+                                alignItems: 'center',
+                              })}
+                            >
+                              <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#FFFFFF' })}>
+                                Start Test
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      ) : (
+                        <View style={themeStyle({ width: 32, height: 32, borderRadius: 16, backgroundColor: '#2D2D4E', alignItems: 'center', justifyContent: 'center' })}>
+                          <Lock size={14} color="#4B5563" />
+                        </View>
+                      )}
+                    </View>
+                  );
+                })
+              )}
             </View>
           )}
 
@@ -924,9 +1059,9 @@ export default function CourseDetail() {
                 </Text>
                 <View style={themeStyle({ flexDirection: 'row', gap: 20 })}>
                   {[
-                    { n: '4.9', l: 'Rating' },
-                    { n: '50K+', l: 'Students' },
-                    { n: '12', l: 'Courses' },
+                    { n: '4.8', l: 'Rating' },
+                    { n: '100+', l: 'Students' },
+                    { n: String(course.lessons), l: 'Lessons' },
                   ].map((s, i) => (
                     <View key={i} style={themeStyle({ alignItems: 'center' })}>
                       <Text
@@ -970,16 +1105,14 @@ export default function CourseDetail() {
                     lineHeight: 22,
                   })}
                 >
-                  A passionate educator with 8+ years of industry experience at top tech companies.
-                  Mentored thousands of students who are now at FAANG companies and top Indian
-                  startups. Known for making complex concepts simple through real-world projects.
+                  {course.instructorBio || `${course.instructor} is a dedicated educator focused on making complex concepts approachable through practical, real-world examples.`}
                 </Text>
               </View>
             </View>
           )}
         </Animated.View>
       </ScrollView>
-
+ 
       {/* Bottom CTA */}
       <View
         style={themeStyle({
@@ -1007,20 +1140,24 @@ export default function CourseDetail() {
               <Text style={themeStyle({ fontWeight: '800', fontSize: 26, color: theme.text })}>
                 ₹{course.price.toLocaleString('en-IN')}
               </Text>
-              <Text
-                style={themeStyle({
-                  fontWeight: '400',
-                  fontSize: 14,
-                  color: '#4B5563',
-                  textDecorationLine: 'line-through',
-                })}
-              >
-                ₹{course.orig.toLocaleString('en-IN')}
-              </Text>
+              {course.orig != null && (
+                <Text
+                  style={themeStyle({
+                    fontWeight: '400',
+                    fontSize: 14,
+                    color: '#4B5563',
+                    textDecorationLine: 'line-through',
+                  })}
+                >
+                  ₹{course.orig.toLocaleString('en-IN')}
+                </Text>
+              )}
             </View>
-            <Text style={themeStyle({ fontWeight: '600', fontSize: 11, color: '#10B981' })}>
-              {discount}% off · 2 days left!
-            </Text>
+            {discount > 0 && (
+              <Text style={themeStyle({ fontWeight: '600', fontSize: 11, color: '#10B981' })}>
+                {discount}% off
+              </Text>
+            )}
           </View>
           <Pressable
             onPressIn={() =>
@@ -1210,12 +1347,12 @@ export default function CourseDetail() {
                   style={themeStyle({
                     fontWeight: '400',
                     fontSize: 11,
-                    color: '#374151',
+                    color: '#4B5563',
                     marginBottom: 16,
                     marginLeft: 4,
                   })}
                 >
-                  Try: WELCOME50 · IASFREE100 · LAUNCH2026
+                  Enter your promotional code above to claim a discount.
                 </Text>
               )}
 

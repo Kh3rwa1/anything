@@ -8,9 +8,16 @@ export const metadata: Metadata = {
 		default: "IAs Academy",
 		template: "%s | IAs Academy",
 	},
-	description: "Practical courses and guided preparation for ambitious learners.",
+	description: "Premium job preparation platform for TCS, Infosys, Google, Amazon and more.",
 	icons: {
 		icon: "/favicon.png",
+		apple: "/favicon.png",
+	},
+	manifest: "/manifest.json",
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "default",
+		title: "IAs Academy",
 	},
 };
 

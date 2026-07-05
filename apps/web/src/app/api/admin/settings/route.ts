@@ -1,4 +1,5 @@
-import sql from '@/app/api/utils/sql';
+import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
+import { Query } from 'node-appwrite';
 import { readJsonObject, rejectCrossOrigin, requireAdmin } from '@/lib/api-security';
 
 const ALLOWED_SETTINGS = new Set([
@@ -26,10 +27,13 @@ export async function GET() {
     const access = await requireAdmin();
     if (!access.ok) return access.response;
 
-    const rows = await sql`SELECT key, value FROM job_prep_settings`;
+    const { databases } = createAdminClient();
+    const rows = await databases.listDocuments(DATABASE_ID, COLLECTIONS.SETTINGS, [
+      Query.limit(100)
+    ]);
     const settings: Record<string, string> = {};
-    for (const row of rows) {
-      settings[row.key] = row.value;
+    for (const doc of rows.documents) {
+      settings[doc.key] = doc.value;
     }
     return Response.json(settings);
   } catch (error) {
@@ -52,13 +56,20 @@ export async function PUT(request: Request) {
     );
     if (entries.length === 0) return Response.json({ success: true });
 
-    // Upsert each key individually to keep it simple
+    const { databases } = createAdminClient();
+
+    // Upsert each key individually
     for (const [key, value] of entries) {
-      await sql`
-        INSERT INTO job_prep_settings (key, value, updated_at)
-        VALUES (${key}, ${String(value)}, NOW())
-        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
-      `;
+      const valStr = String(value);
+      try {
+        await databases.updateDocument(DATABASE_ID, COLLECTIONS.SETTINGS, key, { value: valStr });
+      } catch {
+        try {
+          await databases.createDocument(DATABASE_ID, COLLECTIONS.SETTINGS, key, { key, value: valStr });
+        } catch (err) {
+          console.error(`Failed to create setting ${key}`, err);
+        }
+      }
     }
     return Response.json({ success: true });
   } catch (error) {

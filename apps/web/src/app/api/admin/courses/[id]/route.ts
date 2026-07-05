@@ -1,8 +1,7 @@
-import sql from '@/app/api/utils/sql';
+import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
 import {
   finiteNumber,
   inputErrorResponse,
-  integer,
   optionalString,
   readJsonObject,
   rejectCrossOrigin,
@@ -18,27 +17,37 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (originError) return originError;
 
     const { id } = await params;
-    const courseId = integer(id, 'id', { min: 1 });
     const body = await readJsonObject(request);
     const { title, description, price, instructor, level, duration, thumbnail_url, category_id } =
       body;
 
-    const result = await sql`
-      UPDATE job_prep_courses
-      SET
-        title         = ${requiredString(title, 'title', 160)},
-        description   = ${optionalString(description, 'description', 5000)},
-        price         = ${finiteNumber(price, 'price', { min: 0, max: 1000000 })},
-        instructor    = ${requiredString(instructor, 'instructor', 160)},
-        level         = ${requiredString(level, 'level', 40)},
-        duration      = ${requiredString(duration, 'duration', 80)},
-        thumbnail_url = ${optionalString(thumbnail_url, 'thumbnail_url', 2000)},
-        category_id   = ${integer(category_id, 'category_id', { min: 1 })}
-      WHERE id = ${courseId}
-      RETURNING *
-    `;
-    if (result.length === 0) return Response.json({ error: 'Not found' }, { status: 404 });
-    return Response.json(result[0]);
+    const { databases } = createAdminClient();
+
+    const data = {
+      title: requiredString(title, 'title', 160),
+      description: optionalString(description, 'description', 5000) || '',
+      price: finiteNumber(price, 'price', { min: 0, max: 1000000 }),
+      instructor: requiredString(instructor, 'instructor', 160),
+      level: requiredString(level, 'level', 40),
+      duration: requiredString(duration, 'duration', 80),
+      thumbnail_url: optionalString(thumbnail_url, 'thumbnail_url', 2000) || '',
+      category_id: String(category_id),
+    };
+
+    try {
+      const doc = await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.COURSES,
+        id,
+        data
+      );
+      return Response.json({
+        ...doc,
+        id: doc.$id,
+      });
+    } catch {
+      return Response.json({ error: 'Course not found' }, { status: 404 });
+    }
   } catch (error) {
     return inputErrorResponse(error, 'Failed to update course');
   }
@@ -52,7 +61,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (originError) return originError;
 
     const { id } = await params;
-    await sql`DELETE FROM job_prep_courses WHERE id = ${integer(id, 'id', { min: 1 })}`;
+    const { databases } = createAdminClient();
+
+    await databases.deleteDocument(DATABASE_ID, COLLECTIONS.COURSES, id);
     return Response.json({ success: true });
   } catch (error) {
     return inputErrorResponse(error, 'Failed to delete course');

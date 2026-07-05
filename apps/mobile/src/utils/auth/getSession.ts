@@ -3,8 +3,9 @@
  *
  * Shipped v2 auth helpers. `authFetch` auto-adds Authorization: Bearer <jwt>
  * when a session exists — use it instead of bare fetch() for calls to the
- * web app's API routes. The web server's better-auth bearer() plugin
- * validates these headers. DO NOT reimplement these helpers in user code.
+ * web app's API routes. The web server validates these Appwrite session
+ * tokens through the Appwrite Account API. DO NOT reimplement these helpers
+ * in user code.
  */
 'use client';
 
@@ -25,8 +26,7 @@ export const getJwt = () => useAuthStore.getState().auth?.jwt ?? null;
 /**
  * Drop-in replacement for fetch() that automatically adds the
  * `Authorization: Bearer <jwt>` header when the user is signed in. Use this
- * for calls from the mobile app to the web app's API routes — the web server
- * uses better-auth's `bearer()` plugin to authenticate these requests.
+ * for calls from the mobile app to the web app's API routes.
  *
  * Existing Authorization headers on the caller's `init.headers` are preserved.
  */

@@ -1,19 +1,41 @@
-import { auth, type Session } from '@/lib/auth';
+import { createSessionClient, getSessionToken, serializeAppwriteUser } from '@/lib/appwrite';
 import { headers } from 'next/headers';
 
 type AccessResult =
-  | { ok: true; session: Session }
+  | { ok: true; session: { user: { id: string; email: string; name: string; role: string }; session: { id: string } } }
   | { ok: false; response: Response };
 
 export async function requireSession(): Promise<AccessResult> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
+  try {
+    const reqHeaders = await headers();
+    const dummyReq = new Request('https://ias.academy', { headers: reqHeaders });
+    const token = await getSessionToken(dummyReq);
+    if (!token) {
+      return {
+        ok: false,
+        response: Response.json({ error: 'Unauthorized' }, { status: 401 }),
+      };
+    }
+
+    const { account } = createSessionClient(token);
+    const user = await account.get();
+    const serialized = serializeAppwriteUser(user);
+
+    return {
+      ok: true,
+      session: {
+        user: serialized,
+        session: {
+          id: token,
+        },
+      },
+    };
+  } catch (err: any) {
     return {
       ok: false,
-      response: Response.json({ error: 'Unauthorized' }, { status: 401 }),
+      response: Response.json({ error: err.message || 'Unauthorized' }, { status: 401 }),
     };
   }
-  return { ok: true, session };
 }
 
 export async function requireAdmin(): Promise<AccessResult> {
@@ -39,7 +61,6 @@ export function rejectCrossOrigin(request: Request): Response | null {
   const allowed = new Set(
     [
       requestUrl.origin,
-      process.env.BETTER_AUTH_URL,
       process.env.NEXT_PUBLIC_CREATE_BASE_URL,
       process.env.EXPO_PUBLIC_PROXY_BASE_URL,
     ].filter((value): value is string => Boolean(value))

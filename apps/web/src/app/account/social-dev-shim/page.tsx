@@ -6,7 +6,7 @@
  * throwaway URL that can't be registered as an OAuth redirect — so the social
  * buttons on signin/signup redirect here during development instead of hitting
  * the real provider. This page mints a real session via the shipped
- * email/password flow (the same flow that already works in the preview iframe),
+ * Appwrite email/password flow (the same flow that already works in the preview iframe),
  * so generated apps can exercise their authenticated UI without configuring
  * OAuth. In production (NEXT_PUBLIC_CREATE_ENV !== 'DEVELOPMENT') this page is
  * inert and the buttons run the real provider OAuth.
@@ -69,8 +69,7 @@ function SocialDevShim() {
 
 		const password = devPasswordForEmail(email);
 
-		// Returning dev user → sign in. First-time → sign up. The server backfills
-		// `name` from the email when omitted, so an empty name is fine.
+		// Returning dev user → sign in. First-time → sign up.
 		const { error: signInError } = await authClient.signIn.email({
 			email,
 			password,

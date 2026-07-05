@@ -21,11 +21,13 @@ import {
   Tag,
   Users,
   X,
+  ClipboardCheck,
 } from 'lucide-react';
 
 const NAV = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
+  { href: '/admin/tests', label: 'Mock tests', icon: ClipboardCheck },
   { href: '/admin/students', label: 'Students', icon: Users },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/codes', label: 'Enrollment codes', icon: Tag },
@@ -116,8 +118,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               aria-label="Search workspace"
-              placeholder="Search courses, students, or actions…"
-              className="h-10 w-full rounded-xl border border-black/[0.07] bg-white/80 pl-10 pr-16 text-xs text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.02)] outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-500/10"
+              placeholder="Search coming soon…"
+              disabled
+              className="h-10 w-full rounded-xl border border-black/[0.07] bg-white/80 pl-10 pr-16 text-xs text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.02)] outline-none transition focus:border-violet-300 focus:ring-4 focus:ring-violet-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-md border border-black/[0.07] bg-slate-50 px-1.5 py-1 text-[9px] font-medium text-slate-400">
               <Command className="h-2.5 w-2.5" /> K

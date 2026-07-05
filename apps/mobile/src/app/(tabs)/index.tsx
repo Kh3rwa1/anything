@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -8,20 +6,24 @@ import {
   TouchableOpacity,
   TextInput,
   Dimensions,
+  useWindowDimensions,
   FlatList,
   Animated,
   Pressable,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Bell, Star, Clock, ChevronRight, Flame, Users, Play } from 'lucide-react-native';
+import { Search, Bell, Star, Clock, ChevronRight, Users, Play } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { useAppTheme, themeStyle } from '@/utils/theme';
+import { api } from '@/utils/api';
 
-const { width: W } = Dimensions.get('window');
+// reactive W defined inside components
 
 const CATEGORIES = [
   { id: 0, name: 'All', color: '#4F46E5' },
@@ -33,84 +35,8 @@ const CATEGORIES = [
   { id: 6, name: 'Soft Skills', color: '#EC4899' },
 ];
 
-const FEATURED = [
-  {
-    id: '1',
-    title: 'Full Stack SDE BootCamp 2026',
-    tag: 'BESTSELLER',
-    rating: 4.9,
-    students: '12.4K',
-    price: 4999,
-    img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=90',
-  },
-  {
-    id: '2',
-    title: 'UPSC Civil Services Complete 2026',
-    tag: 'PREMIUM',
-    rating: 4.9,
-    students: '7.8K',
-    price: 7999,
-    img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=900&q=90',
-  },
-  {
-    id: '3',
-    title: 'Quantitative Aptitude Master',
-    tag: 'TOP RATED',
-    rating: 4.8,
-    students: '9.2K',
-    price: 2999,
-    img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=900&q=90',
-  },
-];
-
-const ALL_COURSES = [
-  {
-    id: '1',
-    title: 'Full Stack SDE BootCamp',
-    sub: 'DSA + System Design + Web Dev',
-    rating: 4.9,
-    duration: '48h',
-    price: 4999,
-    img: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',
-    tag: 'BESTSELLER',
-    tagColor: '#F59E0B',
-  },
-  {
-    id: '2',
-    title: 'UPSC Civil Services 2026',
-    sub: 'Prelims + Mains + Interview',
-    rating: 4.9,
-    duration: '120h',
-    price: 7999,
-    img: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&q=80',
-    tag: 'PREMIUM',
-    tagColor: '#8B5CF6',
-  },
-  {
-    id: '3',
-    title: 'Quantitative Aptitude Master',
-    sub: 'Number Theory + Probability',
-    rating: 4.8,
-    duration: '32h',
-    price: 2999,
-    img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80',
-    tag: 'TOP RATED',
-    tagColor: '#10B981',
-  },
-  {
-    id: '4',
-    title: 'IBPS Bank PO Complete Prep',
-    sub: 'Reasoning + Quant + English + GA',
-    rating: 4.7,
-    duration: '60h',
-    price: 3499,
-    img: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&q=80',
-    tag: 'HOT',
-    tagColor: '#EF4444',
-  },
-];
-
 function PulsingDot() {
+  const theme = useAppTheme();
   const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     Animated.loop(
@@ -132,7 +58,7 @@ function PulsingDot() {
         borderRadius: 4,
         backgroundColor: '#EF4444',
         borderWidth: 1.5,
-        borderColor: '#0A0A0F',
+        borderColor: theme.screen,
       })}
     />
   );
@@ -294,7 +220,7 @@ function CourseCard({
               <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
                 <Star size={11} color="#F59E0B" fill="#F59E0B" />
                 <Text style={themeStyle({ fontWeight: '700', fontSize: 11, color: '#E2E8F0' })}>
-                  {course.rating || '4.8'}
+                  {course.rating || 'New'}
                 </Text>
               </View>
               <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
@@ -305,7 +231,7 @@ function CourseCard({
               </View>
             </View>
             <Text style={themeStyle({ fontWeight: '800', fontSize: 15, color: '#818CF8' })}>
-              ₹{Number(course.price).toLocaleString('en-IN')}
+              ₹{Number(course.price ?? 0).toLocaleString('en-IN')}
             </Text>
           </View>
         </View>
@@ -314,7 +240,8 @@ function CourseCard({
   );
 }
 
-function FeaturedCard({ item, onPress }: { item: (typeof FEATURED)[0]; onPress: () => void }) {
+function FeaturedCard({ item, onPress }: { item: any; onPress: () => void }) {
+  const { width: W } = useWindowDimensions();
   const cardScale = useRef(new Animated.Value(1)).current;
   return (
     <Pressable
@@ -430,7 +357,7 @@ function FeaturedCard({ item, onPress }: { item: (typeof FEATURED)[0]; onPress: 
               })}
             >
               <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#FFFFFF' })}>
-                ₹{item.price.toLocaleString('en-IN')}
+                ₹{Number(item.price ?? 0).toLocaleString('en-IN')}
               </Text>
             </View>
           </View>
@@ -530,6 +457,7 @@ function CategoryPill({
 }
 
 export default function ExploreScreen() {
+  const { width: W } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const theme = useAppTheme();
@@ -564,20 +492,33 @@ export default function ExploreScreen() {
     });
   }, []);
 
-  const { data: apiCourses } = useQuery({
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: apiCourses = [], isLoading, isError, refetch } = useQuery<any[]>({
     queryKey: ['courses'],
-    retry: false,
-    queryFn: async () => {
-      const res = await fetch('/api/courses');
-      if (!res.ok) throw new Error('failed');
-      return res.json();
-    },
+    retry: 2,
+    queryFn: () => api('/api/courses'),
   });
 
-  const courses =
-    apiCourses && apiCourses.length > 0
-      ? apiCourses.map((c: any) => ({ ...c, id: String(c.id), img: c.thumbnail_url }))
-      : ALL_COURSES;
+  const courses = apiCourses.map((c: any) => ({
+    ...c,
+    id: String(c.id),
+    img: c.thumbnail_url,
+  }));
+
+  const featuredCourses = courses.slice(0, 3).map((c: any) => ({
+    ...c,
+    tag: c.category_name?.toUpperCase() || 'COURSE',
+  }));
+
+  const filteredCourses = courses.filter((c: any) => {
+    const matchesSearch =
+      !searchQuery ||
+      c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === 0 || Number(c.category_id) === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <View style={themeStyle({ flex: 1, backgroundColor: '#0A0A0F' })}>
@@ -585,6 +526,14 @@ export default function ExploreScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={() => refetch()}
+            tintColor="#818CF8"
+            colors={['#818CF8']}
+          />
+        }
       >
         {/* HEADER */}
         <Animated.View
@@ -630,19 +579,6 @@ export default function ExploreScreen() {
                 >
                   IAs Academy
                 </Text>
-                <Animated.View
-                  style={themeStyle({
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    transform: [{ translateY: streakBounce }],
-                  })}
-                >
-                  <Flame size={10} color="#F59E0B" />
-                  <Text style={themeStyle({ fontWeight: '700', fontSize: 10, color: '#F59E0B' })}>
-                    7 day streak
-                  </Text>
-                </Animated.View>
               </View>
             </View>
             <TouchableOpacity
@@ -679,43 +615,47 @@ export default function ExploreScreen() {
             <TextInput
               placeholder="Search courses, topics, exams..."
               placeholderTextColor="#374151"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
               style={themeStyle({ flex: 1, fontSize: 14, color: '#E2E8F0' })}
             />
           </View>
         </Animated.View>
 
         {/* FEATURED CAROUSEL — use FeaturedCard component in renderItem */}
-        <View style={themeStyle({ marginBottom: 28 })}>
-          <FlatList
-            data={FEATURED}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={W - 32}
-            decelerationRate="fast"
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-            onMomentumScrollEnd={(e) =>
-              setFeaturedIndex(Math.round(e.nativeEvent.contentOffset.x / (W - 32)))
-            }
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <FeaturedCard item={item} onPress={() => router.push(`/course/${item.id}` as any)} />
-            )}
-          />
+        {featuredCourses.length > 0 && (
+          <View style={themeStyle({ marginBottom: 28 })}>
+            <FlatList
+              data={featuredCourses}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={W - 32}
+              decelerationRate="fast"
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+              onMomentumScrollEnd={(e) =>
+                setFeaturedIndex(Math.round(e.nativeEvent.contentOffset.x / (W - 32)))
+              }
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <FeaturedCard item={item} onPress={() => router.push(`/course/${item.id}` as any)} />
+              )}
+            />
 
-          <View
-            style={themeStyle({
-              flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 6,
-              marginTop: 12,
-            })}
-          >
-            {FEATURED.map((_, i) => (
-              <AnimatedDot key={i} active={i === featuredIndex} />
-            ))}
+            <View
+              style={themeStyle({
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 6,
+                marginTop: 12,
+              })}
+            >
+              {featuredCourses.map((_, i) => (
+                <AnimatedDot key={i} active={i === featuredIndex} />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         {/* STATS — use StatPill components */}
         <View
@@ -726,9 +666,9 @@ export default function ExploreScreen() {
             marginBottom: 28,
           })}
         >
-          <StatPill n="50K+" label="Students" color="#818CF8" delay={200} />
-          <StatPill n="120+" label="Courses" color="#F59E0B" delay={300} />
-          <StatPill n="95%" label="Placed" color="#10B981" delay={400} />
+          <StatPill n={String(courses.length || '—')} label="Courses" color="#F59E0B" delay={200} />
+          <StatPill n="Self-paced" label="Learning" color="#818CF8" delay={300} />
+          <StatPill n="24/7" label="Support" color="#10B981" delay={400} />
         </View>
 
         {/* CATEGORIES — use CategoryPill components */}
@@ -775,15 +715,19 @@ export default function ExploreScreen() {
               All Courses
             </Text>
             <TouchableOpacity
+              onPress={() => {
+                setActiveCategory(0);
+                setSearchQuery('');
+              }}
               style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 4 })}
             >
               <Text style={themeStyle({ fontWeight: '600', fontSize: 13, color: '#818CF8' })}>
-                See All
+                Reset Filters
               </Text>
               <ChevronRight size={14} color="#818CF8" />
             </TouchableOpacity>
           </View>
-          {courses.map((course: any, index: number) => (
+          {filteredCourses.map((course: any, index: number) => (
             <CourseCard
               key={course.id}
               course={course}
@@ -791,6 +735,13 @@ export default function ExploreScreen() {
               onPress={() => router.push(`/course/${course.id}` as any)}
             />
           ))}
+          {filteredCourses.length === 0 && (
+            <View style={themeStyle({ alignItems: 'center', paddingVertical: 32 })}>
+              <Text style={themeStyle({ color: '#4B5563', fontSize: 14 })}>
+                No courses match your search or filters.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* CTA */}
@@ -830,7 +781,10 @@ export default function ExploreScreen() {
               >
                 Get a personalized roadmap for your target company.
               </Text>
-              <TouchableOpacity
+               <TouchableOpacity
+                onPress={() => {
+                  Alert.alert('Coming Soon', 'Personalized career roadmaps and quizzes are coming soon!');
+                }}
                 style={themeStyle({
                   backgroundColor: '#FFFFFF',
                   borderRadius: 99,

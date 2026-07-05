@@ -79,6 +79,7 @@ export default function AdminCourses() {
   const [lessonVideo, setLessonVideo] = useState('');
   const [lessonContent, setLessonContent] = useState('');
   const [lessonError, setLessonError] = useState('');
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   const { data: courses, isLoading, isError } = useQuery<Course[]>({
     queryKey: ['admin-courses'],
@@ -182,6 +183,34 @@ export default function AdminCourses() {
     onError: (e: Error) => setLessonError(e.message),
   });
 
+  const updateLessonMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/admin/lessons', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingLesson?.id,
+          title: lessonTitle,
+          video_url: lessonVideo,
+          content: lessonContent,
+          order_index: editingLesson?.order_index,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      return json;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-lessons', expandedCourse] });
+      setLessonTitle('');
+      setLessonVideo('');
+      setLessonContent('');
+      setLessonError('');
+      setEditingLesson(null);
+    },
+    onError: (e: Error) => setLessonError(e.message),
+  });
+
   const deleteLessonMutation = useMutation({
     mutationFn: async (id: number) => {
       const res = await fetch('/api/admin/lessons', {
@@ -230,13 +259,17 @@ export default function AdminCourses() {
     }
   };
 
-  const handleAddLesson = () => {
+  const handleSaveLesson = () => {
     setLessonError('');
     if (!lessonTitle.trim()) {
       setLessonError('Lesson title is required');
       return;
     }
-    addLessonMutation.mutate();
+    if (editingLesson) {
+      updateLessonMutation.mutate();
+    } else {
+      addLessonMutation.mutate();
+    }
   };
 
   const filtered = (courses ?? []).filter(
@@ -469,8 +502,22 @@ export default function AdminCourses() {
                                 )}
                               </div>
                               <button
+                                onClick={() => {
+                                  setEditingLesson(lesson);
+                                  setLessonTitle(lesson.title);
+                                  setLessonVideo(lesson.video_url || '');
+                                  setLessonContent(lesson.content || '');
+                                  setLessonError('');
+                                }}
+                                className="p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
                                 onClick={() => deleteLessonMutation.mutate(lesson.id)}
                                 className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                title="Delete"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -478,9 +525,11 @@ export default function AdminCourses() {
                           ))
                         )}
                       </div>
-                      {/* Add Lesson Form */}
+                      {/* Add/Edit Lesson Form */}
                       <div className="bg-white border border-dashed border-slate-300 rounded-xl p-4">
-                        <p className="text-xs font-semibold text-slate-500 mb-3">Add New Lesson</p>
+                        <p className="text-xs font-semibold text-slate-500 mb-3">
+                          {editingLesson ? 'Edit Lesson' : 'Add New Lesson'}
+                        </p>
                         <div className="grid grid-cols-2 gap-3 mb-3">
                           <input
                             value={lessonTitle}
@@ -505,21 +554,38 @@ export default function AdminCourses() {
                         {lessonError && (
                           <p className="text-xs text-red-500 mb-2">⚠ {lessonError}</p>
                         )}
-                        <button
-                          onClick={handleAddLesson}
-                          disabled={addLessonMutation.isPending}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-                        >
-                          {addLessonMutation.isPending ? (
-                            <RefreshCw
-                              className="w-3.5 h-3.5"
-                              style={{ animation: 'spin 1s linear infinite' }}
-                            />
-                          ) : (
-                            <Plus className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={handleSaveLesson}
+                            disabled={addLessonMutation.isPending || updateLessonMutation.isPending}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                          >
+                            {addLessonMutation.isPending || updateLessonMutation.isPending ? (
+                              <RefreshCw
+                                className="w-3.5 h-3.5 animate-spin"
+                              />
+                            ) : editingLesson ? (
+                              <Check className="w-3.5 h-3.5" />
+                            ) : (
+                              <Plus className="w-3.5 h-3.5" />
+                            )}
+                            {editingLesson ? 'Save Changes' : 'Add Lesson'}
+                          </button>
+                          {editingLesson && (
+                            <button
+                              onClick={() => {
+                                setEditingLesson(null);
+                                setLessonTitle('');
+                                setLessonVideo('');
+                                setLessonContent('');
+                                setLessonError('');
+                              }}
+                              className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              Cancel
+                            </button>
                           )}
-                          Add Lesson
-                        </button>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -1,69 +1,84 @@
-import sql from '@/app/api/utils/sql';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
+import { Query } from 'node-appwrite';
 import {
   inputErrorResponse,
-  integer,
   readJsonObject,
   rejectCrossOrigin,
   requiredString,
+  requireSession,
 } from '@/lib/api-security';
 
 export async function POST(request: Request) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireSession();
+    if (!access.ok) return access.response;
     const originError = rejectCrossOrigin(request);
     if (originError) return originError;
 
     const body = await readJsonObject(request);
-    const courseId = integer(body.courseId, 'courseId', { min: 1 });
+    const courseId = String(body.courseId);
     const code = requiredString(body.code, 'Enrollment code', 80).toUpperCase();
 
-    const existing = await sql`
-      SELECT id FROM job_prep_enrollments
-      WHERE user_id = ${session.user.id} AND course_id = ${courseId}
-      LIMIT 1
-    `;
-    if (existing.length > 0) {
-      return Response.json({ success: true, enrollment: existing[0], already_enrolled: true });
+    const userId = access.session.user.id;
+    const { databases } = createAdminClient();
+
+    // Check existing enrollment
+    const existing = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+      Query.equal('user_id', userId),
+      Query.equal('course_id', courseId),
+      Query.limit(1)
+    ]);
+
+    if (existing.total > 0) {
+      return Response.json({
+        success: true,
+        enrollment: {
+          id: existing.documents[0].$id,
+          ...existing.documents[0]
+        },
+        already_enrolled: true
+      });
     }
 
-    // Code redemption and enrollment happen in one statement, so a failed
-    // enrollment cannot consume a code and max-use checks update atomically.
-    const result = await sql`
-      WITH consumed_code AS (
-        UPDATE job_prep_enrollment_codes
-        SET used_count = used_count + 1
-        WHERE UPPER(code) = ${code}
-          AND is_active = TRUE
-          AND (max_uses IS NULL OR used_count < max_uses)
-          AND (course_id IS NULL OR course_id = ${courseId})
-          AND NOT EXISTS (
-            SELECT 1 FROM job_prep_enrollments
-            WHERE user_id = ${session.user.id} AND course_id = ${courseId}
-          )
-        RETURNING id, discount_pct
-      ), enrolled AS (
-        INSERT INTO job_prep_enrollments (user_id, course_id)
-        SELECT ${session.user.id}, ${courseId} FROM consumed_code
-        ON CONFLICT (user_id, course_id) DO NOTHING
-        RETURNING *
-      )
-      SELECT enrolled.*, consumed_code.discount_pct
-      FROM consumed_code JOIN enrolled ON TRUE
-    `;
+    // Retrieve code
+    const codesRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.CODES, [
+      Query.equal('code', code),
+      Query.equal('is_active', true),
+      Query.limit(1)
+    ]);
 
-    if (result.length === 0) {
-      return Response.json({ error: 'Invalid, expired, or already used enrollment code.' }, { status: 400 });
+    if (codesRes.total === 0) {
+      return Response.json({ error: 'Invalid or expired enrollment code.' }, { status: 400 });
     }
+
+    const codeDoc = codesRes.documents[0];
+
+    // Validate rules
+    if (codeDoc.course_id && String(codeDoc.course_id) !== courseId) {
+      return Response.json({ error: 'This code is not valid for this course.' }, { status: 400 });
+    }
+    if (codeDoc.max_uses !== null && codeDoc.used_count >= codeDoc.max_uses) {
+      return Response.json({ error: 'This code has reached its usage limit.' }, { status: 400 });
+    }
+
+    // Increment code use count
+    await databases.updateDocument(DATABASE_ID, COLLECTIONS.CODES, codeDoc.$id, {
+      used_count: codeDoc.used_count + 1
+    });
+
+    // Create enrollment document
+    const enrollment = await databases.createDocument(DATABASE_ID, COLLECTIONS.ENROLLMENTS, 'unique()', {
+      user_id: userId,
+      course_id: courseId
+    });
 
     return Response.json({
       success: true,
-      enrollment: result[0],
-      discount_pct: result[0].discount_pct,
+      enrollment: {
+        id: enrollment.$id,
+        ...enrollment
+      },
+      discount_pct: codeDoc.discount_pct,
       already_enrolled: false,
     });
   } catch (error) {
@@ -73,17 +88,35 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const access = await requireSession();
+    if (!access.ok) return access.response;
 
-    const enrollments = await sql`
-      SELECT e.*, c.title, c.instructor, c.thumbnail_url, c.duration
-      FROM job_prep_enrollments e
-      JOIN job_prep_courses c ON e.course_id = c.id
-      WHERE e.user_id = ${session.user.id}
-    `;
+    const userId = access.session.user.id;
+    const { databases } = createAdminClient();
+
+    const enrollRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+      Query.equal('user_id', userId),
+      Query.limit(100)
+    ]);
+
+    const enrollments = [];
+    for (const doc of enrollRes.documents) {
+      try {
+        const course = await databases.getDocument(DATABASE_ID, COLLECTIONS.COURSES, doc.course_id);
+        enrollments.push({
+          id: doc.$id,
+          user_id: doc.user_id,
+          course_id: doc.course_id,
+          created_at: doc.$createdAt,
+          title: course.title,
+          instructor: course.instructor,
+          thumbnail_url: course.thumbnail_url,
+          duration: course.duration
+        });
+      } catch {
+        // Skip course if it has been deleted
+      }
+    }
 
     return Response.json(enrollments);
   } catch (error) {

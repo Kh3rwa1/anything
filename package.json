@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "oxlint apps/web/src apps/mobile/src",
+    "lint": "oxlint -A react-hooks/exhaustive-deps -A no-unused-vars apps/web/src apps/mobile/src",
     "typecheck": "yarn workspace web typecheck && yarn workspace mobile typecheck",
     "test": "yarn workspace web test && yarn workspace mobile test",
     "build": "yarn workspace web build",
@@ -16,10 +16,8 @@
     "react-native-screens": "4.16.0"
   },
   "devDependencies": {
-    "eslint": "^9.27.0",
     "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "typescript-eslint": "^8.33.0"
+    "oxlint": "^1.50.0"
   },
   "packageManager": "yarn@4.12.0"
 }

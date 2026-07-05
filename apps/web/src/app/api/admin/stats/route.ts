@@ -1,19 +1,51 @@
-import sql from '@/app/api/utils/sql';
+import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
 import { requireAdmin } from '@/lib/api-security';
+import { Users, Query } from 'node-appwrite';
 
 export async function GET() {
   try {
     const access = await requireAdmin();
     if (!access.ok) return access.response;
 
-    const stats = await sql`
-      SELECT 
-        (SELECT COUNT(*) FROM "user" WHERE role = 'student') as total_students,
-        (SELECT COUNT(*) FROM job_prep_enrollments) as active_enrollments,
-        (SELECT COALESCE(SUM(price), 0) FROM job_prep_enrollments e JOIN job_prep_courses c ON e.course_id = c.id) as total_revenue
-    `;
+    const { client, databases } = createAdminClient();
+    const sdkUsers = new Users(client);
 
-    return Response.json(stats[0]);
+    // Count students (total users from Auth)
+    const usersList = await sdkUsers.list([Query.limit(1)]);
+    const totalStudents = usersList.total;
+
+    // Count active enrollments
+    const enrollRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+      Query.limit(1)
+    ]);
+    const activeEnrollments = enrollRes.total;
+
+    // Calculate total revenue
+    // 1. Get all courses to map course_id -> price
+    const coursesRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.COURSES, [
+      Query.limit(100)
+    ]);
+    const coursePriceMap: Record<string, number> = {};
+    for (const course of coursesRes.documents) {
+      coursePriceMap[course.$id] = course.price || 0;
+    }
+
+    // 2. Fetch all enrollments (up to 5000)
+    const allEnrollments = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+      Query.limit(5000)
+    ]);
+
+    let totalRevenue = 0;
+    for (const enroll of allEnrollments.documents) {
+      const price = coursePriceMap[enroll.course_id] || 0;
+      totalRevenue += price;
+    }
+
+    return Response.json({
+      total_students: totalStudents,
+      active_enrollments: activeEnrollments,
+      total_revenue: totalRevenue
+    });
   } catch (error) {
     console.error(error);
     return Response.json({ error: 'Failed to fetch stats' }, { status: 500 });

@@ -1,87 +1,77 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, Animated, Pressable } from 'react-native';
+import { View, Text, ScrollView, Animated, Pressable, Alert, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, CheckCheck } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { themeStyle } from '@/utils/theme';
+import { useQuery } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { useAppTheme, themeStyle } from '@/utils/theme';
+import { api } from '@/utils/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
-const NOTIFICATIONS = [
-  {
-    id: 1,
-    icon: '🔥',
-    title: '7-Day Streak!',
-    body: "Amazing! You've maintained a 7-day learning streak. Keep it up!",
-    time: '2m ago',
-    unread: true,
-    bg: '#2D1A00',
-  },
-  {
-    id: 2,
-    icon: '📚',
-    title: 'New lesson available',
-    body: '"System Design: Design WhatsApp" has been added to your SDE BootCamp.',
-    time: '1h ago',
-    unread: true,
-    bg: '#1E1B4B',
-  },
-  {
-    id: 3,
-    icon: '🏆',
-    title: 'Badge Unlocked!',
-    body: 'You earned the "Fast Learner" badge for completing 3 lessons in one day!',
-    time: '3h ago',
-    unread: true,
-    bg: '#022C22',
-  },
-  {
-    id: 4,
-    icon: '⚡',
-    title: 'Flash Sale — 70% OFF',
-    body: 'IAs Academy Pro is 70% off for the next 24 hours. Grab it now!',
-    time: '5h ago',
-    unread: false,
-    bg: '#2D0A0A',
-  },
-  {
-    id: 5,
-    icon: '🎯',
-    title: 'Daily goal reminder',
-    body: "You're 30 minutes away from hitting your daily learning goal of 1 hour!",
-    time: 'Yesterday',
-    unread: false,
-    bg: '#0C1A29',
-  },
-  {
-    id: 6,
-    icon: '⭐',
-    title: 'Rate your experience',
-    body: 'How was your session with "Two Pointer Technique"? Leave a quick review!',
-    time: 'Yesterday',
-    unread: false,
-    bg: '#2D1A00',
-  },
-  {
-    id: 7,
-    icon: '📈',
-    title: 'Weekly report ready',
-    body: 'You learned 4.5 hours this week — up 22% from last week. Great progress!',
-    time: '2 days ago',
-    unread: false,
-    bg: '#022C22',
-  },
-  {
-    id: 8,
-    icon: '💎',
-    title: 'Leaderboard update',
-    body: "You jumped to #42 on this week's national leaderboard! Top 5% of students.",
-    time: '3 days ago',
-    unread: false,
-    bg: '#1E0B3A',
-  },
-];
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+async function registerForPushNotificationsAsync() {
+  let token;
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    console.warn('Failed to get push token for push notification!');
+    return null;
+  }
+
+  try {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  } catch (error) {
+    console.error('Failed to retrieve Expo push token:', error);
+  }
+
+  return token;
+}
+
+export async function scheduleLocalMockTestReminder() {
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Ready for another challenge? 🎯",
+        body: "Test your skills with a quick Mock Test today and keep your streak alive!",
+        data: { screen: 'tests' },
+      },
+      trigger: {
+        type: 'timeInterval',
+        seconds: 24 * 60 * 60, // 24 hours from now
+      } as any,
+    });
+  } catch (err) {
+    console.error('Failed to schedule local notification:', err);
+  }
+}
+
+function getRelativeTime(timestamp: string) {
+  try {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+  } catch {
+    return 'Just now';
+  }
+}
 
 function NotifCard({
   notif,
@@ -149,6 +139,7 @@ function NotifCard({
         onPressOut={() =>
           Animated.spring(sc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
         }
+        onPress={() => Alert.alert(notif.title, notif.body)}
         style={themeStyle({
           flexDirection: 'row',
           alignItems: 'flex-start',
@@ -242,7 +233,59 @@ export default function NotificationsScreen() {
   const backSc = useRef(new Animated.Value(1)).current;
   const checkSc = useRef(new Animated.Value(1)).current;
 
-  const unreadCount = markedRead ? 0 : NOTIFICATIONS.filter((n) => n.unread).length;
+  const theme = useAppTheme();
+  const { data: dbNotifications = [], refetch } = useQuery<any[]>({
+    queryKey: ['notifications'],
+    retry: 2,
+    queryFn: () => api('/api/notifications'),
+  });
+
+  // Restore mark-read state from AsyncStorage
+  useEffect(() => {
+    AsyncStorage.getItem('notifications_marked_read').then((val) => {
+      if (val === 'true') setMarkedRead(true);
+    });
+
+    registerForPushNotificationsAsync().then((token) => {
+      if (token) {
+        api('/api/notifications/register', {
+          method: 'POST',
+          body: JSON.stringify({ token }),
+        }).catch((err) => console.error('Failed to register push token:', err));
+      }
+    });
+  }, []);
+
+  const list = dbNotifications.map((n) => ({
+    id: n.$id || String(n.id),
+    icon: n.type === 'update' ? '📚' : n.type === 'streak' ? '🔥' : '⚡',
+    title: n.title,
+    body: n.body,
+    time: getRelativeTime(n.$createdAt || n.createdAt),
+    createdAt: n.$createdAt || n.createdAt,
+    unread: !markedRead,
+    bg: n.type === 'update' ? '#1E1B4B' : n.type === 'streak' ? '#2D1A00' : '#2D0A0A',
+  }));
+
+  const unreadCount = markedRead ? 0 : list.filter((n) => n.unread).length;
+
+  const todayList = list.filter((n) => {
+    try {
+      const diff = Date.now() - new Date(n.createdAt).getTime();
+      return diff < 24 * 60 * 60 * 1000;
+    } catch {
+      return true;
+    }
+  });
+
+  const earlierList = list.filter((n) => {
+    try {
+      const diff = Date.now() - new Date(n.createdAt).getTime();
+      return diff >= 24 * 60 * 60 * 1000;
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     Animated.parallel([
@@ -262,16 +305,17 @@ export default function NotificationsScreen() {
       Animated.spring(checkSc, { toValue: 1, tension: 400, friction: 6, useNativeDriver: true }),
     ]).start();
     setMarkedRead(true);
+    AsyncStorage.setItem('notifications_marked_read', 'true');
   };
 
   return (
-    <View style={themeStyle({ flex: 1, backgroundColor: '#0A0A0F' })}>
-      <StatusBar style="light" />
+    <View style={themeStyle({ flex: 1, backgroundColor: theme.screen })}>
+      <StatusBar style={theme.isLight ? 'dark' : 'light'} />
       <Animated.View
         style={themeStyle({ opacity: headerFade, transform: [{ translateY: headerSlide }] })}
       >
         <LinearGradient
-          colors={['#1E1B4B', '#0A0A0F']}
+          colors={theme.isDark ? ['#1E1B4B', '#0A0A0F'] : ['#E0E7FF', '#F8FAFC']}
           style={themeStyle({
             paddingTop: insets.top + 8,
             paddingBottom: 20,
@@ -309,18 +353,18 @@ export default function NotificationsScreen() {
                     width: 38,
                     height: 38,
                     borderRadius: 19,
-                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    backgroundColor: theme.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderWidth: 1,
-                    borderColor: '#2D2D4E',
+                    borderColor: theme.isDark ? '#2D2D4E' : '#E2E8F0',
                   })}
                 >
-                  <ArrowLeft size={18} color="#FFFFFF" />
+                  <ArrowLeft size={18} color={theme.text} />
                 </Animated.View>
               </Pressable>
               <View>
-                <Text style={themeStyle({ fontWeight: '800', fontSize: 22, color: '#FFFFFF' })}>
+                <Text style={themeStyle({ fontWeight: '800', fontSize: 22, color: theme.text })}>
                   Notifications
                 </Text>
                 {unreadCount > 0 && (
@@ -361,12 +405,12 @@ export default function NotificationsScreen() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 5,
-                    backgroundColor: '#1A1A2E',
+                    backgroundColor: theme.isDark ? '#1A1A2E' : '#FFFFFF',
                     borderRadius: 99,
                     paddingHorizontal: 12,
                     paddingVertical: 7,
                     borderWidth: 1,
-                    borderColor: '#2D2D4E',
+                    borderColor: theme.isDark ? '#2D2D4E' : '#E2E8F0',
                   })}
                 >
                   <CheckCheck size={14} color="#818CF8" />
@@ -387,38 +431,69 @@ export default function NotificationsScreen() {
           paddingTop: 8,
           paddingBottom: insets.bottom + 24,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={false}
+            onRefresh={() => {
+              setMarkedRead(false);
+              AsyncStorage.removeItem('notifications_marked_read');
+              refetch();
+            }}
+            tintColor="#818CF8"
+            colors={['#818CF8']}
+          />
+        }
       >
-        <Text
-          style={themeStyle({
-            fontWeight: '700',
-            fontSize: 12,
-            color: '#374151',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-            marginBottom: 12,
-          })}
-        >
-          Today
-        </Text>
-        {NOTIFICATIONS.slice(0, 4).map((n, i) => (
-          <NotifCard key={n.id} notif={n} index={i} showUnread={!markedRead} />
-        ))}
-        <Text
-          style={themeStyle({
-            fontWeight: '700',
-            fontSize: 12,
-            color: '#374151',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-            marginBottom: 12,
-            marginTop: 10,
-          })}
-        >
-          Earlier
-        </Text>
-        {NOTIFICATIONS.slice(4).map((n, i) => (
-          <NotifCard key={n.id} notif={n} index={i + 4} showUnread={false} />
-        ))}
+        {list.length === 0 ? (
+          <View style={themeStyle({ alignItems: 'center', justifyContent: 'center', paddingVertical: 48 })}>
+            <Text style={themeStyle({ color: '#64748B', fontSize: 15, fontWeight: '600' })}>
+              No notifications yet
+            </Text>
+          </View>
+        ) : (
+          <>
+            {todayList.length > 0 && (
+              <>
+                <Text
+                  style={themeStyle({
+                    fontWeight: '700',
+                    fontSize: 12,
+                    color: '#374151',
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                    marginBottom: 12,
+                  })}
+                >
+                  Today
+                </Text>
+                {todayList.map((n, i) => (
+                  <NotifCard key={n.id} notif={n} index={i} showUnread={!markedRead} />
+                ))}
+              </>
+            )}
+
+            {earlierList.length > 0 && (
+              <>
+                <Text
+                  style={themeStyle({
+                    fontWeight: '700',
+                    fontSize: 12,
+                    color: '#374151',
+                    letterSpacing: 1.2,
+                    textTransform: 'uppercase',
+                    marginBottom: 12,
+                    marginTop: todayList.length > 0 ? 10 : 0,
+                  })}
+                >
+                  Earlier
+                </Text>
+                {earlierList.map((n, i) => (
+                  <NotifCard key={n.id} notif={n} index={i + todayList.length} showUnread={false} />
+                ))}
+              </>
+            )}
+          </>
+        )}
       </ScrollView>
     </View>
   );

@@ -1,0 +1,17 @@
+{
+  "name": "IAs Academy",
+  "short_name": "IAs Academy",
+  "description": "Premium job preparation platform for TCS, Infosys, Google, Amazon and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020205",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

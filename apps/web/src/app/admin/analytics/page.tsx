@@ -11,12 +11,7 @@ import {
   PieChart,
 } from 'lucide-react';
 
-const TRAFFIC = [
-  { source: 'Organic Search', pct: 42, color: 'bg-indigo-500' },
-  { source: 'Social Media', pct: 28, color: 'bg-violet-500' },
-  { source: 'Referrals', pct: 16, color: 'bg-amber-500' },
-  { source: 'Direct', pct: 14, color: 'bg-emerald-500' },
-];
+
 
 function fmtInr(n: number) {
   if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)} Cr`;
@@ -52,8 +47,6 @@ export default function AnalyticsPage() {
     {
       label: 'Total Revenue',
       value: isLoading ? '—' : fmtInr(totals.total_revenue ?? 0),
-      delta: '+23.5%',
-      up: true,
       sub: 'all time',
       icon: <IndianRupee className="w-5 h-5 text-amber-600" />,
       bg: 'bg-amber-50',
@@ -61,8 +54,6 @@ export default function AnalyticsPage() {
     {
       label: 'Total Students',
       value: isLoading ? '—' : (totals.total_students ?? 0).toLocaleString(),
-      delta: '+12.1%',
-      up: true,
       sub: 'registered',
       icon: <Users className="w-5 h-5 text-indigo-600" />,
       bg: 'bg-indigo-50',
@@ -70,17 +61,13 @@ export default function AnalyticsPage() {
     {
       label: 'Courses Completed',
       value: isLoading ? '—' : (totals.completions ?? 0).toLocaleString(),
-      delta: '+8.4%',
-      up: true,
-      sub: 'total completions',
+      sub: 'tracking coming soon',
       icon: <Award className="w-5 h-5 text-emerald-600" />,
       bg: 'bg-emerald-50',
     },
     {
       label: 'Active Enrollments',
       value: isLoading ? '—' : (totals.total_enrollments ?? 0).toLocaleString(),
-      delta: '+5.2%',
-      up: true,
       sub: 'all courses',
       icon: <BarChart2 className="w-5 h-5 text-violet-600" />,
       bg: 'bg-violet-50',
@@ -106,12 +93,6 @@ export default function AnalyticsPage() {
               <div className={`w-10 h-10 ${k.bg} rounded-xl flex items-center justify-center`}>
                 {k.icon}
               </div>
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 ${k.up ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}
-              >
-                {k.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {k.delta}
-              </span>
             </div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
               {k.label}
@@ -191,37 +172,18 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Traffic Sources */}
+        {/* Traffic Sources — placeholder */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-5">
             <PieChart className="w-4 h-4 text-slate-400" />
             <h2 className="text-base font-bold text-slate-900">Traffic Sources</h2>
           </div>
-          <div className="space-y-4">
-            {TRAFFIC.map((t, i) => (
-              <div key={i}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${t.color}`} />
-                    <span className="text-sm font-medium text-slate-700">{t.source}</span>
-                  </div>
-                  <span className="text-sm font-bold text-slate-900">{t.pct}%</span>
-                </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${t.color} rounded-full`}
-                    style={{ width: `${t.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-            <p className="text-xs font-bold text-indigo-700 mb-1">📈 Insight</p>
-            <p className="text-xs text-indigo-600 leading-relaxed">
-              Organic search grew 34% last month. Consider doubling down on SEO for UPSC and Banking
-              exam topics.
-            </p>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+              <PieChart className="w-6 h-6 text-slate-300" />
+            </div>
+            <p className="text-sm font-semibold text-slate-600">Connect analytics</p>
+            <p className="text-xs text-slate-400 mt-1 max-w-[200px]">Integrate Google Analytics or Plausible to see real traffic source data here.</p>
           </div>
         </div>
       </div>

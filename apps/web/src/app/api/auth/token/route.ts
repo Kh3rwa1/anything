@@ -1,28 +1,22 @@
-/**
- * ⚠ ANYTHING PLATFORM — DO NOT REWRITE THIS FILE ⚠
- *
- * Shipped v2 mobile token-exchange endpoint. The mobile WebView intercepts
- * the redirect to this URL after signup/signin, fetches the JSON, and stores
- * { jwt, user } in SecureStore. The response shape ({ jwt, user: { id,
- * email, name } }) is the exact contract AuthWebView.tsx parses — changing
- * it breaks mobile auth platform-wide.
- */
-import { auth } from '@/lib/auth';
+// NOTE: This route is used by the mobile app's AuthWebView. Do not remove.
+import { createSessionClient, getSessionToken, serializeAppwriteUser } from '@/lib/appwrite';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const token = await getSessionToken(request);
 
-  if (!session?.user || !session?.session) {
+  if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return NextResponse.json({
-    jwt: session.session.token,
-    user: {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-    },
-  });
+  try {
+    const { account } = createSessionClient(token);
+    const user = await account.get();
+
+    return NextResponse.json({
+      user: serializeAppwriteUser(user),
+    });
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 }

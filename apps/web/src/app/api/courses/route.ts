@@ -1,8 +1,8 @@
-import sql from '@/app/api/utils/sql';
+import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
+import { Query } from 'node-appwrite';
 import {
   finiteNumber,
   inputErrorResponse,
-  integer,
   optionalString,
   readJsonObject,
   rejectCrossOrigin,
@@ -13,24 +13,40 @@ import {
 export async function GET(request: Request) {
   try {
     const id = new URL(request.url).searchParams.get('id');
+    // Admin client is necessary here because Appwrite requires a server-side
+    // API key for database reads — a public client cannot access databases.
+    const { databases } = createAdminClient();
+
     if (id) {
-      const rows = await sql`
-        SELECT c.*, cat.name AS category_name,
-          (SELECT COUNT(*) FROM job_prep_lessons l WHERE l.course_id = c.id) AS lesson_count
-        FROM job_prep_courses c
-        JOIN job_prep_categories cat ON c.category_id = cat.id
-        WHERE c.id = ${integer(id, 'id', { min: 1 })}
-        LIMIT 1
-      `;
-      if (!rows[0]) return Response.json({ error: 'Course not found' }, { status: 404 });
-      return Response.json(rows[0]);
+      try {
+        const course = await databases.getDocument(DATABASE_ID, COLLECTIONS.COURSES, id);
+        
+        // Count lessons
+        const lessons = await databases.listDocuments(DATABASE_ID, COLLECTIONS.LESSONS, [
+          Query.equal('course_id', id),
+          Query.limit(1)
+        ]);
+
+        return Response.json({
+          ...course,
+          id: course.$id,
+          lesson_count: lessons.total,
+        });
+      } catch {
+        return Response.json({ error: 'Course not found' }, { status: 404 });
+      }
     }
-    const courses = await sql`
-      SELECT c.*, cat.name as category_name 
-      FROM job_prep_courses c
-      JOIN job_prep_categories cat ON c.category_id = cat.id
-      ORDER BY c.created_at DESC
-    `;
+
+    const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.COURSES, [
+      Query.orderDesc('$createdAt'),
+      Query.limit(100)
+    ]);
+
+    const courses = response.documents.map(doc => ({
+      ...doc,
+      id: doc.$id,
+    }));
+
     return Response.json(courses);
   } catch (error) {
     return inputErrorResponse(error, 'Failed to fetch courses');
@@ -48,22 +64,30 @@ export async function POST(request: Request) {
     const { title, description, price, category_id, instructor, level, duration, thumbnail_url } =
       body;
 
-    const result = await sql`
-      INSERT INTO job_prep_courses (title, description, price, category_id, instructor, level, duration, thumbnail_url)
-      VALUES (
-        ${requiredString(title, 'title', 160)},
-        ${optionalString(description, 'description', 5000)},
-        ${finiteNumber(price, 'price', { min: 0, max: 1000000 })},
-        ${integer(category_id, 'category_id', { min: 1 })},
-        ${requiredString(instructor, 'instructor', 160)},
-        ${requiredString(level, 'level', 40)},
-        ${requiredString(duration, 'duration', 80)},
-        ${optionalString(thumbnail_url, 'thumbnail_url', 2000)}
-      )
-      RETURNING *
-    `;
+    const { databases } = createAdminClient();
 
-    return Response.json(result[0]);
+    const data = {
+      title: requiredString(title, 'title', 160),
+      description: optionalString(description, 'description', 5000) || '',
+      price: finiteNumber(price, 'price', { min: 0, max: 1000000 }),
+      category_id: String(category_id),
+      instructor: requiredString(instructor, 'instructor', 160),
+      level: requiredString(level, 'level', 40),
+      duration: requiredString(duration, 'duration', 80),
+      thumbnail_url: optionalString(thumbnail_url, 'thumbnail_url', 2000) || '',
+    };
+
+    const doc = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.COURSES,
+      'unique()',
+      data
+    );
+
+    return Response.json({
+      ...doc,
+      id: doc.$id,
+    });
   } catch (error) {
     return inputErrorResponse(error, 'Failed to create course');
   }

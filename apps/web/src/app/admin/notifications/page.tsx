@@ -23,11 +23,11 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const AUDIENCE_LABELS: Record<string, string> = {
-  all: 'All Students (2,786)',
-  pro: 'Pro Members (1,240)',
-  basic: 'Basic Members (1,546)',
-  streak: 'Active Streak Users (980)',
-  inactive: 'Inactive Users (340)',
+  all: 'All Students',
+  pro: 'Pro Members',
+  basic: 'Basic Members',
+  streak: 'Active Streak Users',
+  inactive: 'Inactive Users',
 };
 
 // Safe date formatter

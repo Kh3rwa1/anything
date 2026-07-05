@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -11,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import {
   CreditCard,
   Award,
@@ -32,8 +32,12 @@ import {
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import * as Haptics from 'expo-haptics';
+import Constants from 'expo-constants';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/utils/auth/useAuth';
 import { useAppTheme, themeStyle } from '@/utils/theme';
+import { api } from '@/utils/api';
 
 const MENU_SECTIONS = [
   {
@@ -64,12 +68,14 @@ function MenuItem({
   color,
   bg,
   index,
+  onPress,
 }: {
   icon: any;
   label: string;
   color: string;
   bg: string;
   index: number;
+  onPress: () => void;
 }) {
   const fade = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(20)).current;
@@ -102,6 +108,7 @@ function MenuItem({
         onPressOut={() =>
           Animated.spring(sc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
         }
+        onPress={onPress}
         style={themeStyle({
           flexDirection: 'row',
           alignItems: 'center',
@@ -185,8 +192,19 @@ function StatBox({
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
-  const [notif, setNotif] = useState(true);
-  const { signOut } = useAuth();
+  const router = useRouter();
+  const [notif] = useState(true);
+  const { signOut, auth, isAuthenticated, signIn } = useAuth();
+
+  const { data: enrollments = [] } = useQuery<any[]>({
+    queryKey: ['my-enrollments'],
+    queryFn: () => api('/api/enroll'),
+    enabled: !!isAuthenticated,
+  });
+
+  const name = auth?.user?.name || 'Guest User';
+  const email = auth?.user?.email || 'Sign in to sync your progress';
+  const avatar = auth?.user?.image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&q=80';
 
   const avatarFade = useRef(new Animated.Value(0)).current;
   const avatarScale = useRef(new Animated.Value(0.5)).current;
@@ -220,15 +238,23 @@ export default function ProfileScreen() {
   }, []);
 
   const handleSignOut = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+      { 
+        text: 'Sign Out', 
+        style: 'destructive', 
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          signOut();
+        } 
+      },
     ]);
   };
 
   return (
     <View style={themeStyle({ flex: 1, backgroundColor: '#0A0A0F' })}>
-      <StatusBar style="light" />
+      <StatusBar style={theme.statusBar} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}
@@ -262,7 +288,7 @@ export default function ProfileScreen() {
             >
               <Image
                 source={{
-                  uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=80',
+                  uri: avatar,
                 }}
                 style={themeStyle({ width: '100%', height: '100%' })}
                 contentFit="cover"
@@ -301,7 +327,7 @@ export default function ProfileScreen() {
                 marginBottom: 4,
               })}
             >
-              Rahul Sharma
+              {name}
             </Text>
             <Text
               style={themeStyle({
@@ -311,10 +337,10 @@ export default function ProfileScreen() {
                 marginBottom: 14,
               })}
             >
-              rahul.s@example.com
+              {email}
             </Text>
             <LinearGradient
-              colors={['#F59E0B', '#EF4444']}
+              colors={['#4F46E5', '#7C3AED']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={themeStyle({
@@ -327,34 +353,14 @@ export default function ProfileScreen() {
                 marginBottom: 16,
               })}
             >
-              <Star size={12} color="#FFFFFF" fill="#FFFFFF" />
               <Text style={themeStyle({ fontWeight: '800', fontSize: 12, color: '#FFFFFF' })}>
-                Elite Prepster — Level 7
+                {isAuthenticated ? 'Student Account' : 'Guest Mode'}
               </Text>
             </LinearGradient>
-            <View style={themeStyle({ flexDirection: 'row', gap: 8 })}>
-              {['💻 SDE Track', '🔥 7-Day Streak'].map((t, i) => (
-                <View
-                  key={i}
-                  style={themeStyle({
-                    backgroundColor: '#111118',
-                    borderRadius: 99,
-                    paddingHorizontal: 14,
-                    paddingVertical: 6,
-                    borderWidth: 1,
-                    borderColor: '#2D2D4E',
-                  })}
-                >
-                  <Text style={themeStyle({ fontWeight: '600', fontSize: 12, color: '#818CF8' })}>
-                    {t}
-                  </Text>
-                </View>
-              ))}
-            </View>
           </Animated.View>
         </LinearGradient>
 
-        {/* Stats — use StatBox components instead of .map() with hooks */}
+        {/* Stats */}
         <View
           style={themeStyle({
             flexDirection: 'row',
@@ -365,7 +371,7 @@ export default function ProfileScreen() {
           })}
         >
           <StatBox
-            val="8"
+            val={String(enrollments?.length || 0)}
             label="Courses"
             icon={<BookOpen size={14} color="#818CF8" />}
             colors={['#1E1B4B', '#252560']}
@@ -373,127 +379,13 @@ export default function ProfileScreen() {
           />
 
           <StatBox
-            val="3"
-            label="Certs"
+            val="0"
+            label="Certificates"
             icon={<Award size={14} color="#F59E0B" />}
             colors={['#2D1A00', '#3D2600']}
             delay={370}
           />
-
-          <StatBox
-            val="480"
-            label="XP"
-            icon={<Zap size={14} color="#10B981" />}
-            colors={['#022C22', '#033828']}
-            delay={440}
-          />
-
-          <StatBox
-            val="#42"
-            label="Rank"
-            icon={<TrendingUp size={14} color="#EF4444" />}
-            colors={['#2D0A0A', '#3D1010']}
-            delay={510}
-          />
         </View>
-
-        {/* Pro Card */}
-        <Animated.View
-          style={themeStyle({
-            paddingHorizontal: 20,
-            marginBottom: 28,
-            opacity: proAnim,
-            transform: [{ scale: proAnim }],
-          })}
-        >
-          <LinearGradient
-            colors={['#4F46E5', '#7C3AED']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={themeStyle({ borderRadius: 22, padding: 20 })}
-          >
-            <View
-              style={themeStyle({
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              })}
-            >
-              <View>
-                <Text
-                  style={themeStyle({
-                    fontWeight: '400',
-                    fontSize: 11,
-                    color: '#C4B5FD',
-                    marginBottom: 2,
-                  })}
-                >
-                  Current Plan
-                </Text>
-                <Text
-                  style={themeStyle({
-                    fontWeight: '800',
-                    fontSize: 20,
-                    color: '#FFFFFF',
-                    marginBottom: 2,
-                  })}
-                >
-                  IAs Academy Pro ✦
-                </Text>
-                <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#A5B4FC' })}>
-                  Renews Aug 1, 2026
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={themeStyle({
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderWidth: 1,
-                  borderColor: 'rgba(255,255,255,0.2)',
-                })}
-              >
-                <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#FFFFFF' })}>
-                  Manage
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={themeStyle({ marginTop: 16 })}>
-              <View
-                style={themeStyle({
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginBottom: 6,
-                })}
-              >
-                <Text style={themeStyle({ fontWeight: '500', fontSize: 11, color: '#C4B5FD' })}>
-                  Subscription period
-                </Text>
-                <Text style={themeStyle({ fontWeight: '600', fontSize: 11, color: '#FFFFFF' })}>
-                  68% remaining
-                </Text>
-              </View>
-              <View
-                style={themeStyle({
-                  height: 6,
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                })}
-              >
-                <View
-                  style={themeStyle({
-                    width: '68%',
-                    height: '100%',
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: 3,
-                  })}
-                />
-              </View>
-            </View>
-          </LinearGradient>
-        </Animated.View>
 
         {/* Menu */}
         <View style={themeStyle({ paddingHorizontal: 20 })}>
@@ -528,6 +420,21 @@ export default function ProfileScreen() {
                       color={item.color}
                       bg={item.bg}
                       index={si * 10 + ii}
+                      onPress={() => {
+                        if (item.label === 'Performance Reports') {
+                          router.push('/profile/performance' as any);
+                          return;
+                        }
+                        const messages: Record<string, string> = {
+                          'Subscriptions & Billing': 'Manage subscriptions through your App Store or Play Store account settings.',
+                          'My Certificates': 'Complete enrolled courses to earn certificates. Keep learning!',
+                          'Target Careers': 'Career roadmap matching is coming in a future update. Stay tuned!',
+                          'Security & Privacy': 'Your account is secured via Appwrite authentication. Additional security settings coming soon.',
+                          'App Settings': 'Additional app settings are coming in a future update.',
+                          'Help Center': 'Need help? Contact us at support@ias-academy.in',
+                        };
+                        Alert.alert(item.label, messages[item.label] || 'This feature is coming in a future update.');
+                      }}
                     />
 
                     {ii < section.items.length - 1 && (
@@ -582,13 +489,16 @@ export default function ProfileScreen() {
                   Push Notifications
                 </Text>
               </View>
-              <Switch
-                value={notif}
-                onValueChange={setNotif}
-                trackColor={{ false: '#2D2D4E', true: '#4F46E5' }}
-                thumbColor="#FFFFFF"
-              />
-            </View>
+            <Switch
+              value={notif}
+              onValueChange={() => {
+                Haptics.selectionAsync();
+                Alert.alert('Push Notifications', 'Push notification configuration is coming in a future update!');
+              }}
+              trackColor={{ false: '#2D2D4E', true: '#4F46E5' }}
+              thumbColor="#FFFFFF"
+            />
+          </View>
             <View style={themeStyle({ height: 1, backgroundColor: '#111118', marginLeft: 66 })} />
             <View
               style={themeStyle({
@@ -634,61 +544,116 @@ export default function ProfileScreen() {
               </View>
               <Switch
                 value={theme.isLight}
-                onValueChange={(enabled) => theme.setMode(enabled ? 'light' : 'dark')}
+                onValueChange={(enabled) => {
+                  theme.setMode(enabled ? 'light' : 'dark');
+                  Haptics.selectionAsync();
+                }}
                 trackColor={{ false: '#2D2D4E', true: '#F59E0B' }}
                 thumbColor="#FFFFFF"
               />
             </View>
           </View>
-
-          {/* Sign Out */}
-          <Pressable
-            onPressIn={() =>
-              Animated.spring(logoutSc, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                tension: 400,
-              }).start()
-            }
-            onPressOut={() =>
-              Animated.spring(logoutSc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-            }
-            onPress={handleSignOut}
-          >
-            <Animated.View
-              style={themeStyle({
-                transform: [{ scale: logoutSc }],
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 14,
-                backgroundColor: '#1A0A0A',
-                borderRadius: 20,
-                padding: 16,
-                borderWidth: 1,
-                borderColor: '#3D1010',
-                marginBottom: 8,
-              })}
+ 
+          {/* Sign Out / Sign In */}
+          {isAuthenticated ? (
+            <Pressable
+              onPressIn={() =>
+                Animated.spring(logoutSc, {
+                  toValue: 0.95,
+                  useNativeDriver: true,
+                  tension: 400,
+                }).start()
+              }
+              onPressOut={() =>
+                Animated.spring(logoutSc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
+              }
+              onPress={handleSignOut}
             >
-              <View
+              <Animated.View
                 style={themeStyle({
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: '#2D0A0A',
+                  transform: [{ scale: logoutSc }],
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: 14,
+                  backgroundColor: '#1A0A0A',
+                  borderRadius: 20,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: '#3D1010',
+                  marginBottom: 8,
                 })}
               >
-                <LogOut size={17} color="#EF4444" />
-              </View>
-              <Text
-                style={themeStyle({ fontWeight: '600', fontSize: 15, color: '#EF4444', flex: 1 })}
+                <View
+                  style={themeStyle({
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: '#2D0A0A',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  })}
+                >
+                  <LogOut size={17} color="#EF4444" />
+                </View>
+                <Text
+                  style={themeStyle({ fontWeight: '600', fontSize: 15, color: '#EF4444', flex: 1 })}
+                >
+                  Sign Out
+                </Text>
+              </Animated.View>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPressIn={() =>
+                Animated.spring(logoutSc, {
+                  toValue: 0.95,
+                  useNativeDriver: true,
+                  tension: 400,
+                }).start()
+              }
+              onPressOut={() =>
+                Animated.spring(logoutSc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
+              }
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                signIn();
+              }}
+            >
+              <Animated.View
+                style={themeStyle({
+                  transform: [{ scale: logoutSc }],
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 14,
+                  backgroundColor: '#0F172A',
+                  borderRadius: 20,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: '#1E293B',
+                  marginBottom: 8,
+                })}
               >
-                Sign Out
-              </Text>
-            </Animated.View>
-          </Pressable>
-
+                <View
+                  style={themeStyle({
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    backgroundColor: '#1E293B',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  })}
+                >
+                  <LogOut size={17} color="#38BDF8" style={{ transform: [{ rotate: '180deg' }] }} />
+                </View>
+                <Text
+                  style={themeStyle({ fontWeight: '600', fontSize: 15, color: '#38BDF8', flex: 1 })}
+                >
+                  Sign In / Sign Up
+                </Text>
+              </Animated.View>
+            </Pressable>
+          )}
+ 
           <Text
             style={themeStyle({
               textAlign: 'center',
@@ -698,7 +663,7 @@ export default function ProfileScreen() {
               marginTop: 20,
             })}
           >
-            IAs Academy v1.0.0 · Made with ❤️ in India 🇮🇳
+            IAs Academy v{Constants.expoConfig?.version ?? '1.0.0'} · Made with ❤️ in India 🇮🇳
           </Text>
         </View>
       </ScrollView>
