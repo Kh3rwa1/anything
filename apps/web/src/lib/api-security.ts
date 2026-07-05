@@ -58,9 +58,14 @@ export function rejectCrossOrigin(request: Request): Response | null {
   if (!origin) return null;
 
   const requestUrl = new URL(request.url);
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || requestUrl.host;
+  const proto = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http');
+  const forwardedOrigin = `${proto}://${host}`;
+
   const allowed = new Set(
     [
       requestUrl.origin,
+      forwardedOrigin,
       process.env.NEXT_PUBLIC_CREATE_BASE_URL,
       process.env.EXPO_PUBLIC_PROXY_BASE_URL,
     ].filter((value): value is string => Boolean(value))
