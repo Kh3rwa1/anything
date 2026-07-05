@@ -127,7 +127,7 @@ describe('initiatePurchases', () => {
     expect(cbs.setOfferings).toHaveBeenCalledWith(makeOfferings());
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/revenue-cat/get-subscription-status',
-      { method: 'POST' }
+      expect.objectContaining({ method: 'POST' })
     );
   });
 
@@ -344,7 +344,7 @@ describe('executePurchase', () => {
     await executePurchase({ pkg: { identifier: 'test' }, setIsSubscribed });
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/revenue-cat/get-subscription-status',
-      { method: 'POST' }
+      expect.objectContaining({ method: 'POST' })
     );
   });
 });
@@ -378,7 +378,7 @@ describe('executeRestore', () => {
     await executeRestore(jest.fn());
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/revenue-cat/get-subscription-status',
-      { method: 'POST' }
+      expect.objectContaining({ method: 'POST' })
     );
   });
 });

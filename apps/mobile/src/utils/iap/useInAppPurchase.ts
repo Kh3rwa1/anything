@@ -2,6 +2,7 @@ import Purchases, { LOG_LEVEL, PRODUCT_CATEGORY } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { useInAppPurchaseStore } from './store';
+import { api } from '@/utils/api';
 
 export const RETRY_ATTEMPTS = 3;
 export const RETRY_DELAY_MS = 1500;
@@ -44,13 +45,9 @@ export async function fetchSubscriptionStatus(
   setIsSubscribed: (v: boolean) => void
 ) {
   try {
-    const response = await fetch('/api/revenue-cat/get-subscription-status', {
+    const data = await api('/api/revenue-cat/get-subscription-status', {
       method: 'POST',
     });
-    if (!response.ok) {
-      throw new Error('Failed to check subscription status');
-    }
-    const data = await response.json();
     setIsSubscribed(data.hasAccess);
   } catch (error) {
     console.error('Error fetching subscription status:', error);

@@ -237,6 +237,40 @@ export default function ProfileScreen() {
     ]).start();
   }, []);
 
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Permanently',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              const res = await api('/api/auth/delete-account', { method: 'POST' });
+              if (res.success) {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                signOut();
+                Alert.alert('Success', 'Your account has been deleted.');
+              } else {
+                Alert.alert('Error', res.error || 'Failed to delete account.');
+              }
+            } catch (err) {
+              Alert.alert('Error', 'An error occurred while deleting your account.');
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleSignOut = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -556,52 +590,89 @@ export default function ProfileScreen() {
  
           {/* Sign Out / Sign In */}
           {isAuthenticated ? (
-            <Pressable
-              onPressIn={() =>
-                Animated.spring(logoutSc, {
-                  toValue: 0.95,
-                  useNativeDriver: true,
-                  tension: 400,
-                }).start()
-              }
-              onPressOut={() =>
-                Animated.spring(logoutSc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-              }
-              onPress={handleSignOut}
-            >
-              <Animated.View
-                style={themeStyle({
-                  transform: [{ scale: logoutSc }],
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 14,
-                  backgroundColor: '#1A0A0A',
-                  borderRadius: 20,
-                  padding: 16,
-                  borderWidth: 1,
-                  borderColor: '#3D1010',
-                  marginBottom: 8,
-                })}
+            <View style={themeStyle({ gap: 8 })}>
+              <Pressable
+                onPressIn={() =>
+                  Animated.spring(logoutSc, {
+                    toValue: 0.95,
+                    useNativeDriver: true,
+                    tension: 400,
+                  }).start()
+                }
+                onPressOut={() =>
+                  Animated.spring(logoutSc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
+                }
+                onPress={handleSignOut}
+              >
+                <Animated.View
+                  style={themeStyle({
+                    transform: [{ scale: logoutSc }],
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 14,
+                    backgroundColor: '#1A0A0A',
+                    borderRadius: 20,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: '#3D1010',
+                  })}
+                >
+                  <View
+                    style={themeStyle({
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      backgroundColor: '#2D0A0A',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    })}
+                  >
+                    <LogOut size={17} color="#EF4444" />
+                  </View>
+                  <Text
+                    style={themeStyle({ fontWeight: '600', fontSize: 15, color: '#EF4444', flex: 1 })}
+                  >
+                    Sign Out
+                  </Text>
+                </Animated.View>
+              </Pressable>
+
+              <Pressable
+                disabled={deleting}
+                onPress={handleDeleteAccount}
+                style={({ pressed }) =>
+                  themeStyle({
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 14,
+                    backgroundColor: pressed ? '#220404' : '#140202',
+                    borderRadius: 20,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: '#2D0A0A',
+                    opacity: deleting ? 0.7 : 1,
+                  })
+                }
               >
                 <View
                   style={themeStyle({
                     width: 36,
                     height: 36,
                     borderRadius: 10,
-                    backgroundColor: '#2D0A0A',
+                    backgroundColor: '#220404',
                     alignItems: 'center',
                     justifyContent: 'center',
                   })}
                 >
-                  <LogOut size={17} color="#EF4444" />
+                  <LogOut size={17} color="#EF4444" style={{ transform: [{ rotate: '90deg' }] }} />
                 </View>
                 <Text
                   style={themeStyle({ fontWeight: '600', fontSize: 15, color: '#EF4444', flex: 1 })}
                 >
-                  Sign Out
+                  {deleting ? 'Deleting Account...' : 'Delete Account'}
                 </Text>
-              </Animated.View>
-            </Pressable>
+              </Pressable>
+            </View>
           ) : (
             <Pressable
               onPressIn={() =>

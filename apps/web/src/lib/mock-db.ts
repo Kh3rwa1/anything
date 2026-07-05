@@ -1,7 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 
-const DB_FILE = path.join(process.cwd(), 'db', 'mock-db.json');
+const isServerless = Boolean(
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.VERCEL ||
+  process.env.NETLIFY ||
+  (process.env.PORT && process.env.PORT !== '4000')
+);
+
+const DB_FILE = isServerless
+  ? path.join('/tmp', 'mock-db.json')
+  : path.join(process.cwd(), 'db', 'mock-db.json');
 
 export interface MockTest {
   id: string;
