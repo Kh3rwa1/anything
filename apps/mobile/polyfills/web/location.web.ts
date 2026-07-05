@@ -1,3 +1,4 @@
+declare var module: any;
 import type { LocationGeocodedAddress } from 'expo-location';
 
 type Coords = { latitude: number; longitude: number };

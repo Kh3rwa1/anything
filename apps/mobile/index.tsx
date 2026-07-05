@@ -8,7 +8,7 @@ if (__DEV__) {
 
 import "react-native-url-polyfill/auto";
 import "./src/__create/polyfills";
-global.Buffer = require("buffer").Buffer;
+(globalThis as any).Buffer = require("buffer").Buffer;
 
 import "@expo/metro-runtime";
 import { AppRegistry, LogBox } from "react-native";

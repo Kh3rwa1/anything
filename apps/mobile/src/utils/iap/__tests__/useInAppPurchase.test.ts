@@ -30,6 +30,8 @@ import {
   executeRestore,
 } from '../useInAppPurchase';
 
+declare var global: any;
+
 // --- Helpers ---
 
 const makeOfferings = (hasCurrent = true) => ({
