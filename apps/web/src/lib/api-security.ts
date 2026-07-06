@@ -59,19 +59,30 @@ export function rejectCrossOrigin(request: Request): Response | null {
 
   const requestUrl = new URL(request.url);
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || requestUrl.host;
-  const proto = request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http');
-  const forwardedOrigin = `${proto}://${host}`;
 
-  const allowed = new Set(
+  const getHost = (urlStr: string | undefined): string => {
+    if (!urlStr) return '';
+    const clean = urlStr.includes('://') ? urlStr : `https://${urlStr}`;
+    try {
+      return new URL(clean).host;
+    } catch {
+      return clean.replace(/^https?:\/\//, '').split('/')[0];
+    }
+  };
+
+  const originHost = getHost(origin);
+  const allowedHosts = new Set(
     [
-      requestUrl.origin,
-      forwardedOrigin,
-      process.env.NEXT_PUBLIC_CREATE_BASE_URL,
-      process.env.EXPO_PUBLIC_PROXY_BASE_URL,
-    ].filter((value): value is string => Boolean(value))
+      requestUrl.host,
+      getHost(host),
+      getHost(process.env.NEXT_PUBLIC_CREATE_BASE_URL),
+      getHost(process.env.EXPO_PUBLIC_PROXY_BASE_URL),
+    ]
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean)
   );
 
-  if (!allowed.has(origin)) {
+  if (!allowedHosts.has(originHost)) {
     return Response.json({ error: 'Invalid request origin' }, { status: 403 });
   }
   return null;
