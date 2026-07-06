@@ -402,16 +402,18 @@ export default function LandingPage() {
       </section>
 
       {/* Brand Placement Slider */}
-      <div className={`border-y ${borderClass} ${isDark ? 'bg-[#020205]/40' : 'bg-slate-100/50'} py-8 transition-colors`}>
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] mb-6">
+      <div className="border-y border-slate-200 bg-slate-50 py-6 overflow-hidden relative">
+        <div className="max-w-6xl mx-auto px-6 mb-4">
+          <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em]">
             Jharkhand Govt Exams & Local Placements Covered
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-y-4 gap-x-12 sm:gap-x-16 opacity-50">
-            {PARTNERS.map((p, i) => (
+        </div>
+        <div className="relative w-full flex items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]">
+          <div className="flex gap-16 whitespace-nowrap animate-marquee py-2">
+            {[...PARTNERS, ...PARTNERS, ...PARTNERS].map((p, i) => (
               <span 
                 key={i} 
-                className={`font-black text-lg tracking-wider transition-opacity cursor-default uppercase ${isDark ? 'text-white' : 'text-slate-800'}`}
+                className="font-black text-lg sm:text-xl tracking-wider text-slate-400 uppercase select-none hover:text-indigo-600 transition-colors duration-200"
               >
                 {p}
               </span>
@@ -439,13 +441,13 @@ export default function LandingPage() {
             {FEATURES.map((f, i) => (
               <div
                 key={i}
-                className={`group p-8 ${featureCardClass} border rounded-3xl transition-all duration-300 shadow-sm backdrop-blur-md`}
+                className="group p-8 bg-white border border-slate-200 hover:border-indigo-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/[0.03] rounded-3xl transition-all duration-300 shadow-sm"
               >
-                <div className="w-14 h-14 bg-brand-primary/10 rounded-2xl border border-brand-primary/20 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,91,255,0.2)] transition-all duration-300">
+                <div className="w-14 h-14 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,91,255,0.1)] transition-all duration-300">
                   {f.icon}
                 </div>
-                <h3 className={`font-extrabold ${isDark ? 'text-white' : 'text-slate-900'} text-lg mb-3 tracking-tight`}>{f.title}</h3>
-                <p className={`text-sm ${textMutedClass} leading-relaxed font-medium`}>{f.desc}</p>
+                <h3 className="font-extrabold text-slate-900 text-lg mb-3 tracking-tight">{f.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -476,7 +478,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 reveal-on-scroll">
             {COURSES.map((c, i) => (
               <div
-                className="group border border-slate-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white"
+                key={i}
+                className="group border border-slate-200 hover:border-indigo-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/[0.03] rounded-3xl overflow-hidden transition-all duration-300 bg-white"
               >
                 {/* Course Header Image */}
                 <div className="h-40 bg-slate-50 border-b border-slate-100 flex flex-col items-center justify-center relative p-6">
@@ -494,7 +497,7 @@ export default function LandingPage() {
                   <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1.5">
                     {c.cat}
                   </p>
-                  <h3 className={`font-extrabold ${isDark ? 'text-white' : 'text-slate-900'} text-xl mb-4 leading-snug tracking-tight`}>
+                  <h3 className="font-extrabold text-slate-900 text-xl mb-4 leading-snug tracking-tight">
                     {c.title}
                   </h3>
                   
@@ -510,11 +513,11 @@ export default function LandingPage() {
                     </span>
                   </div>
 
-                  <div className={`flex items-center justify-between border-t ${isDark ? 'border-white/[0.04]' : 'border-slate-100'} pt-5`}>
-                    <span className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{c.price}</span>
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-5">
+                    <span className="text-xl font-black text-slate-900">{c.price}</span>
                     <Link 
                       href="/account/signup" 
-                      className="px-5 py-2.5 text-xs font-black text-white bg-brand-primary hover:bg-brand-primary/90 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-brand-primary/20 active:scale-95"
+                      className="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 active:scale-95 shadow-sm"
                     >
                       Enroll Now
                     </Link>

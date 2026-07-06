@@ -180,4 +180,16 @@
     .animate-hero-fade-up {
         animation: hero-fade-up 1000ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* Infinite Marquee Loop for Exams */
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-33.333%); }
+    }
+    .animate-marquee {
+        display: inline-flex;
+        white-space: nowrap;
+        animation: marquee 20s linear infinite;
+        will-change: transform;
+    }
 }
