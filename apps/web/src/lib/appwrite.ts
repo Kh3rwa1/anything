@@ -1,8 +1,8 @@
 import { Account, Client, Databases } from 'node-appwrite';
 import { cookies } from 'next/headers';
 
-const APPWRITE_ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = process.env.APPWRITE_PROJECT_ID || 'ias-academy';
+const APPWRITE_ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID = process.env.APPWRITE_PROJECT_ID || '6a4a5761002f29a00e5b';
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY || '';
 const APPWRITE_DATABASE_ID = process.env.APPWRITE_DATABASE_ID || 'main';
 
