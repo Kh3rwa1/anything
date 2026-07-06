@@ -61,7 +61,7 @@ const EMPTY_FORM: CourseForm = {
   level: 'Beginner',
   duration: '',
   thumbnail_url: '',
-  category_id: '1',
+  category_id: 'SDE',
 };
 
 export default function AdminCourses() {
@@ -110,7 +110,7 @@ export default function AdminCourses() {
         body: JSON.stringify({
           ...data,
           price: parseFloat(data.price),
-          category_id: parseInt(data.category_id),
+          category_id: data.category_id,
         }),
       });
       const json = await res.json();
@@ -132,7 +132,7 @@ export default function AdminCourses() {
         body: JSON.stringify({
           ...data,
           price: parseFloat(data.price),
-          category_id: parseInt(data.category_id),
+          category_id: data.category_id,
         }),
       });
       const json = await res.json();
@@ -649,17 +649,31 @@ export default function AdminCourses() {
                   placeholder="e.g. 48h"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Level</label>
-                <select
-                  value={form.level}
-                  onChange={(e) => setForm({ ...form, level: e.target.value })}
-                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-                >
-                  {LEVELS.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Level</label>
+                  <select
+                    value={form.level}
+                    onChange={(e) => setForm({ ...form, level: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                  >
+                    {LEVELS.map((l) => (
+                      <option key={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Category *</label>
+                  <select
+                    value={form.category_id}
+                    onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                  >
+                    <option value="SDE">SDE Preparation</option>
+                    <option value="UPSC">UPSC Civil Services</option>
+                    <option value="Aptitude">Placement Aptitude</option>
+                  </select>
+                </div>
               </div>
               <FieldInput
                 label="Thumbnail URL"

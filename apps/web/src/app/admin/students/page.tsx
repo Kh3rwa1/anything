@@ -69,7 +69,7 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'joined' | 'name' | 'courses' | 'progress'>('joined');
 
-  const { data: students = [], isLoading, isError } = useQuery<Student[]>({
+  const { data, isLoading, isError } = useQuery<{ data: Student[] }>({
     queryKey: ['admin-students'],
     retry: false,
     queryFn: async () => {
@@ -78,6 +78,8 @@ export default function StudentsPage() {
       return res.json();
     },
   });
+
+  const students = data?.data ?? [];
 
   const filtered = students
     .filter(
