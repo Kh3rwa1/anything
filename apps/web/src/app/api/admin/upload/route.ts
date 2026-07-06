@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/appwrite';
 import { requireAdmin, rejectCrossOrigin } from '@/lib/api-security';
-import { Storage, InputFile } from 'node-appwrite';
+import { Storage } from 'node-appwrite';
+import { InputFile } from 'node-appwrite/file';
 
 export async function POST(request: Request) {
   try {
