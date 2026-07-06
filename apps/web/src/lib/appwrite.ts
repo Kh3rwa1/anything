@@ -46,13 +46,9 @@ export function serializeAppwriteUser(user: {
 }
 
 function createBaseClient() {
-  const projectId = process.env.APPWRITE_PROJECT_ID;
-  if (!projectId) {
-    throw new Error('APPWRITE_PROJECT_ID env var is required');
-  }
   return new Client()
     .setEndpoint(APPWRITE_ENDPOINT)
-    .setProject(projectId);
+    .setProject(APPWRITE_PROJECT_ID);
 }
 
 /**
@@ -77,11 +73,10 @@ export function createPublicClient() {
  * Used for database updates, coupon resolution, and administrative sync.
  */
 export function createAdminClient() {
-  const apiKey = process.env.APPWRITE_API_KEY;
-  if (!apiKey) {
+  if (!APPWRITE_API_KEY) {
     throw new Error('APPWRITE_API_KEY env var is required');
   }
-  const client = createBaseClient().setKey(apiKey);
+  const client = createBaseClient().setKey(APPWRITE_API_KEY);
 
   return {
     get client() {
