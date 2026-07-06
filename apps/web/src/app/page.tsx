@@ -125,7 +125,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [mockAppTab, setMockAppTab] = useState<'syllabus' | 'audio' | 'iap'>('syllabus');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -189,18 +189,7 @@ export default function LandingPage() {
   const ctaButtonClass = isDark ? 'text-indigo-950 bg-brand-accent hover:bg-brand-accent/90' : 'text-white bg-brand-primary hover:bg-brand-primary/90 shadow-lg shadow-brand-primary/20';
 
   return (
-    <div className={`min-h-screen ${bgClass} font-sans overflow-hidden selection:bg-brand-primary/30 selection:text-white relative transition-colors duration-300`}>
-      
-      {/* Background Matrix & Grid Mesh */}
-      <div className={`absolute inset-0 ${gridClass} pointer-events-none`} />
-      
-      {isDark && (
-        <>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,91,255,0.12)_0%,_transparent_55%)] pointer-events-none" />
-          <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-[30%] left-[-15%] w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[140px] pointer-events-none" />
-        </>
-      )}
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans overflow-hidden selection:bg-indigo-600/30 selection:text-white relative">
 
       {/* Premium Header */}
       <nav className={`fixed top-0 left-0 right-0 z-50 ${navClass} backdrop-blur-xl border-b px-6 py-4 transition-colors duration-300`}>
@@ -209,39 +198,27 @@ export default function LandingPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-brand-primary via-purple-600 to-brand-accent rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20 border border-white/10">
               <span className="font-black text-sm text-white tracking-tight">IA</span>
             </div>
-            <span className={`font-extrabold text-xl tracking-tight bg-gradient-to-r ${logoTextClass} bg-clip-text text-transparent`}>
+            <span className="font-extrabold text-xl tracking-tight text-slate-900">
               IAs Academy
             </span>
           </div>
 
           <div className="hidden md:flex items-center gap-8">
-            <a href="#courses" className={`text-sm font-semibold ${navLinkClass} transition-colors duration-200`}>
+            <a href="#courses" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors duration-200">
               Courses
             </a>
-            <a href="#features" className={`text-sm font-semibold ${navLinkClass} transition-colors duration-200`}>
+            <a href="#features" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors duration-200">
               Platform Features
             </a>
-            <a href="#experience" className={`text-sm font-semibold ${navLinkClass} transition-colors duration-200`}>
+            <a href="#experience" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors duration-200">
               Mobile App
             </a>
-            <a href="#faq" className={`text-sm font-semibold ${navLinkClass} transition-colors duration-200`}>
+            <a href="#faq" className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors duration-200">
               FAQ
             </a>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            {/* Theme Toggle Button */}
-            <button
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className={`p-2 rounded-xl border transition-colors ${
-                isDark 
-                  ? 'bg-white/[0.03] border-white/[0.08] text-brand-accent hover:text-brand-accent/90' 
-                  : 'bg-slate-100 border-slate-200 text-brand-primary hover:text-brand-primary/90'
-              }`}
-              title="Toggle theme mode"
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
 
             {showInstallBtn && (
               <button
@@ -382,13 +359,13 @@ export default function LandingPage() {
           <h1 className={`text-4xl sm:text-6xl md:text-8xl font-black ${isDark ? 'text-white' : 'text-slate-900'} tracking-tighter leading-[1.02] mb-8 select-none animate-hero-fade-up [animation-delay:150ms]`}>
             Aapki Job Prep
             <br />
-            <span className="bg-gradient-to-r from-brand-primary via-purple-500 to-brand-accent bg-clip-text text-transparent filter drop-shadow-sm">
+            <span className="text-indigo-600">
               Ab Aur Bhi Aasan!
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className={`text-base sm:text-xl ${textMutedClass} max-w-3xl mx-auto leading-relaxed mb-12 font-medium animate-hero-fade-up [animation-delay:300ms]`}>
+          <p className="text-base sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-12 font-medium animate-hero-fade-up [animation-delay:300ms]">
             Get ready for TCS, Infosys, JPSC, UPSC and other top exams. Simple video classes, easy notes, and mock tests designed specifically for you.
           </p>
 
@@ -396,14 +373,14 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20 animate-hero-fade-up [animation-delay:450ms]">
             <Link
               href="/account/signup"
-              className="inline-flex items-center gap-2.5 px-8 py-4 text-base font-black text-white bg-gradient-to-r from-brand-primary via-brand-primary to-purple-600 rounded-2xl transition-all duration-300 shadow-xl shadow-brand-primary/35 border border-white/10 hover:shadow-brand-primary/50 hover:scale-[1.02] active:scale-95 group"
+              className="inline-flex items-center gap-2.5 px-8 py-4 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 shadow-sm active:scale-95 group"
             >
               Start Learning Free
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
             <button
               onClick={handleInstallClick}
-              className={`px-8 py-4 text-base font-bold ${isDark ? 'text-slate-300 bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06]' : 'text-slate-700 bg-slate-100 border-slate-200 hover:bg-slate-200'} border rounded-2xl transition-all duration-200`}
+              className="px-8 py-4 text-base font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all duration-200"
             >
               Install PWA Client
             </button>
@@ -499,14 +476,15 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 reveal-on-scroll">
             {COURSES.map((c, i) => (
               <div
-                key={i}
-                className={`group ${catalogCardClass} border rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${c.glow}`}
+                className="group border border-slate-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white"
               >
-                {/* Course Header Mock Image */}
-                <div className={`h-48 bg-gradient-to-br ${isDark ? 'from-brand-primary/20 via-purple-900/30 to-brand-accent/10 border-b border-white/[0.04]' : 'from-indigo-100 via-indigo-50 to-amber-50/40 border-b border-slate-100'} flex items-center justify-center text-7xl relative group-hover:scale-102 transition-transform duration-300`}>
-                  <span className="opacity-95 select-none">{c.emoji}</span>
+                {/* Course Header Image */}
+                <div className="h-40 bg-slate-50 border-b border-slate-100 flex flex-col items-center justify-center relative p-6">
+                  <div className="w-12 h-12 bg-white border border-slate-200 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg mb-2 shadow-sm">
+                    {c.emoji}
+                  </div>
                   <span
-                    className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider ${c.badgeColor}`}
+                    className="absolute top-4 left-4 px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-indigo-50 border-indigo-100 text-indigo-700"
                   >
                     {c.badge}
                   </span>
@@ -619,108 +597,38 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Premium SmartPhone Mockup Component */}
+            {/* Clean Feature Dashboard Preview Card */}
             <div className="order-1 lg:order-2 flex justify-center">
-              <div className="relative w-[310px] h-[610px] bg-slate-900 rounded-[50px] p-3 border-4 border-slate-700 shadow-2xl shadow-brand-primary/10 flex-shrink-0">
-                {/* Dynamic Screen Area */}
-                <div className="w-full h-full bg-[#0a0a0f] rounded-[40px] overflow-hidden border border-slate-800 relative flex flex-col justify-between">
-                  
-                  {/* Status Bar */}
-                  <div className="h-6 px-6 bg-slate-950 flex items-center justify-between z-20 text-[9px] font-bold text-slate-500">
-                    <span>10:32 AM</span>
-                    <div className="w-16 h-3 bg-black rounded-full absolute left-1/2 -translate-x-1/2 top-1.5" /> {/* Camera notch */}
-                    <div className="flex items-center gap-1.5">
-                      <span>LTE</span>
-                      <div className="w-4 h-2 bg-slate-600 rounded-sm" />
-                    </div>
+              <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-md shadow-slate-100/50">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Mobile Companion App</span>
+                    <h3 className="text-base font-extrabold text-slate-900 mt-0.5">Syllabus Overview</h3>
                   </div>
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">Offline Ready</span>
+                </div>
 
-                  {/* Dynamic Screen Mockup Content */}
-                  <div className="flex-1 p-4 overflow-y-auto z-10 flex flex-col justify-between pt-5">
-                    
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest">IA MOBILE</p>
-                        <h5 className="text-sm font-extrabold text-white">Course Overview</h5>
-                      </div>
-                      <span className="w-8 h-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-xs">👤</span>
+                <div className="space-y-3">
+                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">1. Welcome & Jharkhand Govt Syllabus</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Syllabus intro · 8m</p>
                     </div>
-
-                    {/* App Tabs Context */}
-                    <div className="flex-1 flex flex-col justify-center gap-4 py-3">
-                      {mockAppTab === 'syllabus' && (
-                        <div className="space-y-2.5 animate-fadeIn">
-                          <div className="h-16 bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-bold text-white">1. Welcome & Environment</p>
-                              <p className="text-[10px] text-brand-primary mt-0.5">Syllabus intro · 8m</p>
-                            </div>
-                            <CheckCircle size={14} className="text-emerald-400" />
-                          </div>
-                          <div className="h-16 bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-bold text-white">2. Complexity Analysis</p>
-                              <p className="text-[10px] text-slate-400 mt-0.5">DSA core · 22m</p>
-                            </div>
-                            <Play size={12} className="text-brand-primary fill-brand-primary" />
-                          </div>
-                          <div className="h-16 bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 flex items-center justify-between opacity-55">
-                            <div>
-                              <p className="text-xs font-bold text-slate-300">3. Master Theorem</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">Math core · 18m</p>
-                            </div>
-                            <Lock size={12} className="text-slate-600" />
-                          </div>
-                        </div>
-                      )}
-
-                      {mockAppTab === 'audio' && (
-                        <div className="bg-brand-primary/20 border border-brand-primary/20 rounded-2xl p-4 text-center animate-fadeIn">
-                          <div className="w-12 h-12 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 border border-brand-primary/30">
-                            <Clock className="w-5 h-5 text-brand-primary" />
-                          </div>
-                          <h6 className="text-xs font-extrabold text-white">Download Cache Active</h6>
-                          <p className="text-[10px] text-slate-400 mt-1 leading-normal">
-                            All SDE lessons downloaded locally. You can study offline during transit.
-                          </p>
-                          <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4 overflow-hidden">
-                            <div className="bg-brand-primary h-full w-2/3 rounded-full" />
-                          </div>
-                          <span className="text-[9px] text-brand-primary font-bold block mt-2">68% COMPLETE</span>
-                        </div>
-                      )}
-
-                      {mockAppTab === 'iap' && (
-                        <div className="bg-brand-accent/10 border border-brand-accent/20 rounded-2xl p-4 text-center animate-fadeIn">
-                          <Award className="w-8 h-8 text-brand-accent mx-auto mb-2" />
-                          <h6 className="text-xs font-extrabold text-brand-accent">Lifetime Pass Enabled</h6>
-                          <p className="text-[10px] text-slate-400 mt-1">
-                            Fully synced with RevenueCat play subscriptions. Unlimited course resets.
-                          </p>
-                          <span className="inline-block bg-brand-accent text-slate-950 font-black text-[9px] px-2.5 py-1 rounded-full uppercase tracking-wider mt-3">
-                            Verified
-                          </span>
-                        </div>
-                      )}
+                    <CheckCircle size={16} className="text-emerald-500" />
+                  </div>
+                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">2. Time & Work Shortcut Theorems</p>
+                      <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Aptitude core · 22m</p>
                     </div>
-
-                    {/* App Navigation Footer */}
-                    <div className="border-t border-white/[0.04] pt-3 flex items-center justify-around text-slate-500">
-                      <div className="text-center">
-                        <BookOpen size={14} className="mx-auto text-brand-primary" />
-                        <span className="text-[8px] font-bold block mt-1 text-brand-primary">Study</span>
-                      </div>
-                      <div className="text-center">
-                        <Star size={14} className="mx-auto" />
-                        <span className="text-[8px] font-bold block mt-1">Catalog</span>
-                      </div>
-                      <div className="text-center">
-                        <Award size={14} className="mx-auto" />
-                        <span className="text-[8px] font-bold block mt-1">Awards</span>
-                      </div>
+                    <Play size={14} className="text-indigo-600 fill-indigo-600" />
+                  </div>
+                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between opacity-60">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">3. Jharkhand History & JPSC Prep</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">General Studies · 45m</p>
                     </div>
-
+                    <Lock size={14} className="text-slate-400" />
                   </div>
                 </div>
               </div>
