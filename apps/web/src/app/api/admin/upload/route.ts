@@ -1,7 +1,6 @@
 import { createAdminClient } from '@/lib/appwrite';
 import { requireAdmin, rejectCrossOrigin } from '@/lib/api-security';
 import { Storage } from 'node-appwrite';
-import { InputFile } from 'node-appwrite/file';
 
 export async function POST(request: Request) {
   try {
@@ -20,16 +19,12 @@ export async function POST(request: Request) {
     const { client } = createAdminClient();
     const storage = new Storage(client);
 
-    // Convert Web File API to buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Upload to Appwrite
-    const uploadedFile = await storage.createFile(
-      'course-assets',
-      'unique()',
-      InputFile.fromBuffer(buffer, file.name)
-    );
+    // Upload to Appwrite using standard Web File API directly
+    const uploadedFile = await storage.createFile({
+      bucketId: 'course-assets',
+      fileId: 'unique()',
+      file: file,
+    });
 
     // Build the public view URL
     const endpoint = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
