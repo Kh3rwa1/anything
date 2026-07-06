@@ -117,8 +117,8 @@ const FAQS = [
 ];
 
 const PARTNERS = [
-  'TCS', 'Infosys', 'Wipro', 'Google', 'Amazon', 'Microsoft', 
-  'Deloitte', 'KPMG', 'Flipkart', 'TATA', 'Reliance'
+  'JPSC', 'JSSC CGL', 'JTET Exam', 'Jharkhand Police', 
+  'Excise Constable', 'Tata Steel', 'TCS Ninja', 'Infosys'
 ];
 
 export default function LandingPage() {
@@ -428,7 +428,7 @@ export default function LandingPage() {
       <div className={`border-y ${borderClass} ${isDark ? 'bg-[#020205]/40' : 'bg-slate-100/50'} py-8 transition-colors`}>
         <div className="max-w-6xl mx-auto px-6">
           <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-[0.25em] mb-6">
-            ALUMNI PLACED AT THE FOREFRONT OF INDUSTRY
+            Jharkhand Govt Exams & Local Placements Covered
           </p>
           <div className="flex flex-wrap items-center justify-center gap-y-4 gap-x-12 sm:gap-x-16 opacity-50">
             {PARTNERS.map((p, i) => (
