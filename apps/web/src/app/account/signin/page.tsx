@@ -63,13 +63,13 @@ function SignInForm() {
           </div>
           <div>
             <p className="font-bold text-[15px] text-white leading-none">IAs Academy</p>
-            <p className="text-[10px] text-[#4B5563] mt-[2px]">India's #1 Job Prep Platform</p>
+            <p className="text-[10px] text-[#4B5563] mt-[2px]">Simple Learning & Job Prep App</p>
           </div>
         </div>
         <div>
           <h1 className="text-[24px] font-bold text-white tracking-tight">Welcome back 👋</h1>
           <p className="text-[13px] text-[#4B5563] mt-[4px]">
-            Sign in to continue your learning journey
+            Sign in to continue your classes
           </p>
         </div>
         <label className="flex flex-col gap-[6px]">

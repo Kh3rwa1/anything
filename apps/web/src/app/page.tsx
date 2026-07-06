@@ -22,42 +22,42 @@ import {
 } from 'lucide-react';
 
 const STATS = [
-  { val: 'Expert', label: 'Mentors & IAS Guides' },
-  { val: 'Flexible', label: 'Mobile Learning Platform' },
-  { val: 'Focused', label: 'Company Placement Prep' },
-  { val: 'Practical', label: 'Real-World Case Studies' },
+  { val: 'Easy', label: 'Simple explanations' },
+  { val: 'Mobile', label: 'Learn on any phone' },
+  { val: 'Focused', label: 'TCS & JPSC oriented' },
+  { val: 'Practical', label: 'Tests & revision notes' },
 ];
 
 const FEATURES = [
   {
     icon: '🎯',
-    title: 'Target Company Roadmaps',
-    desc: 'Structured curricula custom-tailored for TCS, Infosys, Wipro, Google, Amazon, and 200+ top-tier employers.',
+    title: 'Company Study Plans',
+    desc: 'Step-by-step prep materials for TCS, Infosys, Wipro, JPSC, UPSC and other top exams.',
   },
   {
     icon: '🧠',
-    title: 'Cognitive Learning Loops',
-    desc: 'Bite-sized, focused lessons structured to fit into busy schedules, backed by interactive retrieval quizzes.',
+    title: 'Short & Easy Lessons',
+    desc: 'Short video classes and simple notes that you can finish easily in 10-15 minutes.',
   },
   {
     icon: '🏆',
-    title: 'Verifiable Credentials',
-    desc: 'Gain industry-recognized completion certificates to showcase on LinkedIn and build your professional resume.',
+    title: 'Free Certificates',
+    desc: 'Get a course completion certificate. Share it on your resume or WhatsApp to show your skills.',
   },
   {
     icon: '👨‍💼',
-    title: 'IAS & Industry Mentors',
-    desc: 'Learn through real-world breakdowns from veteran engineers, MBA alumni, and senior civil servants.',
+    title: 'Helpful Mentors',
+    desc: 'Learn directly from senior software engineers, civil services guides, and experienced mentors.',
   },
   {
     icon: '📱',
-    title: 'PWA & Native App Sync',
-    desc: 'Install the web client on any desktop/mobile device or take it on the go with our fully synchronized Expo mobile app.',
+    title: 'Works Offline',
+    desc: 'Use our website or install our mobile app to download notes and study even without active internet.',
   },
   {
     icon: '💼',
-    title: 'Interview Command Center',
-    desc: 'Simulated mock panels, quantitative aptitude practice, and soft skills training to build ultimate interview day confidence.',
+    title: 'Mock Interview Prep',
+    desc: 'Solve model question papers, practice basic math puzzles, and build confidence to pass any job interview.',
   },
 ];
 
@@ -99,20 +99,20 @@ const COURSES = [
 
 const FAQS = [
   {
-    q: 'Can I learn offline using the mobile app?',
-    a: 'Yes! The native Expo mobile app allows you to download lesson materials and review syllabus contents offline. Progress automatically syncs back once you reconnect.',
+    q: 'Can I study offline using the mobile app?',
+    a: 'Yes! You can download study notes and watch classes on our mobile app without active internet. Your progress will sync automatically when you connect.',
   },
   {
     q: 'How do course access codes work?',
-    a: 'Access codes are distributed by collaborating colleges, institutes, or during promotions. Entering a valid code during checkout will instantly enroll you in the catalog course for free or at a high discount.',
+    a: 'Collaborating colleges and institutes distribute these codes. Enter the code during checkout to enroll in any course for free or at a special discount.',
   },
   {
-    q: 'Is there direct mentorship from instructors?',
-    a: 'Absolutely. We organize bi-weekly mock panels and Q&A sessions where you can get direct guidance from industry leads and IAS coaches.',
+    q: 'Will teachers help me direct?',
+    a: 'Yes. We host regular doubt-solving sessions, Q&As, and mock tests where you get direct advice from mentors and teachers.',
   },
   {
-    q: 'Are certificates shareable on professional networks?',
-    a: 'Yes, all earned certificates include unique tracking hashes and can be verified and directly embedded into your LinkedIn profile.',
+    q: 'Can I add these certificates to my resume?',
+    a: 'Yes, all certificates are verified and can be easily downloaded or added directly to your LinkedIn profile and resume.',
   },
 ];
 
@@ -375,22 +375,21 @@ export default function LandingPage() {
           {/* Accent Pill */}
           <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-primary text-[10px] sm:text-xs font-black tracking-widest uppercase px-4 py-2 rounded-full mb-8 shadow-[0_0_15px_rgba(99,91,255,0.05)] animate-hero-fade-up">
             <Zap className="w-3.5 h-3.5 fill-brand-primary/60 text-brand-primary" />
-            Pioneering Job Preparation Platform
+            Simple Learning & Job Prep App
           </div>
 
           {/* Main Title */}
           <h1 className={`text-4xl sm:text-6xl md:text-8xl font-black ${isDark ? 'text-white' : 'text-slate-900'} tracking-tighter leading-[1.02] mb-8 select-none animate-hero-fade-up [animation-delay:150ms]`}>
-            Architecting Your
+            Aapki Job Prep
             <br />
             <span className="bg-gradient-to-r from-brand-primary via-purple-500 to-brand-accent bg-clip-text text-transparent filter drop-shadow-sm">
-              Placement Success
+              Ab Aur Bhi Aasan!
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className={`text-base sm:text-xl ${textMutedClass} max-w-3xl mx-auto leading-relaxed mb-12 font-medium animate-hero-fade-up [animation-delay:300ms]`}>
-            Acquire role-ready competency. Step-by-step masterclasses, expert aptitude roadmaps, 
-            and deep-dive syllabus tracking built to help you outshine the competition.
+            Get ready for TCS, Infosys, JPSC, UPSC and other top exams. Simple video classes, easy notes, and mock tests designed specifically for you.
           </p>
 
           {/* CTA Buttons */}
@@ -449,13 +448,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-20 reveal-on-scroll">
             <p className="text-brand-primary font-extrabold text-xs uppercase tracking-[0.2em] mb-4">
-              ACADEMY EDGE
+              WHY CHOOSE US
             </p>
             <h2 className={`text-3xl sm:text-5xl font-black ${textClass} tracking-tight leading-tight`}>
-              A Complete Platform Ecosystem
+              Simple & Useful Learning Features
             </h2>
             <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto mt-3">
-              We did away with the clutter. Explore a platform built with pure utility to accelerate your job prep.
+              We made our learning app very clean. No complex menus, just pure study materials to help you get placed.
             </p>
           </div>
 
@@ -482,10 +481,10 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 reveal-on-scroll">
             <div>
               <p className="text-brand-primary font-extrabold text-xs uppercase tracking-[0.2em] mb-4">
-                CATALOG
+                COURSES
               </p>
               <h2 className={`text-3xl sm:text-5xl font-black ${textClass} tracking-tight leading-tight`}>
-                Curated Placement Masterclasses
+                Popular Online Courses
               </h2>
             </div>
             <Link
@@ -557,13 +556,13 @@ export default function LandingPage() {
             {/* Context Switcher & Details */}
             <div className="order-2 lg:order-1">
               <p className="text-brand-primary font-extrabold text-xs uppercase tracking-[0.2em] mb-4">
-                LEARNER APP EXPERIENCE
+                MOBILE LEARNING APP
               </p>
               <h2 className={`text-3xl sm:text-5xl font-black ${textClass} tracking-tight leading-tight mb-6`}>
-                Mobile Learning Native Ecosystem
+                Study Anywhere on Your Phone
               </h2>
               <p className={`${textMutedClass} leading-relaxed font-medium mb-8`}>
-                Take your courses on the road. We engineered a native Expo mobile companion application to keep your curriculum fully accessible on iOS and Android devices.
+                Prepare for exams on the go. We built a fast and lightweight mobile app so you can watch classes, read notes, and track your progress from anywhere in Jharkhand.
               </p>
 
               {/* Tabs */}
@@ -784,12 +783,10 @@ export default function LandingPage() {
               ))}
             </div>
             <h2 className={`text-3xl sm:text-5xl font-black ${ctaTitleClass} tracking-tight mb-6 leading-tight`}>
-              Start Masterclass Preparation
-              <br />
-              Secure Your Staging Candidate
+              Start Preparing for Your Dream Job Today
             </h2>
             <p className={`${ctaSubtitleClass} text-sm sm:text-base max-w-xl mx-auto mb-10 leading-relaxed font-semibold`}>
-              Join thousands of placed students. Establish your student console credentials, and deploy your career plan instantly.
+              Join thousands of students studying for their careers. Create your free account and start learning now!
             </p>
             <Link
               href="/account/signup"
