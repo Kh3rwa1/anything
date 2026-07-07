@@ -1,6 +1,7 @@
 import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
 import { Query } from 'node-appwrite';
 import { rejectCrossOrigin, requireAdmin, readJsonObject } from '@/lib/api-security';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -86,8 +87,8 @@ export async function POST(request: Request) {
       ...doc,
       id: doc.$id,
     }, { status: 201 });
-  } catch (error: any) {
-    console.error(error);
+  } catch (error: unknown) {
+    logger.error('Failed to create code', { error });
     return Response.json({ error: 'Failed to create code' }, { status: 500 });
   }
 }
@@ -148,8 +149,8 @@ export async function PATCH(request: Request) {
       ...updated,
       id: updated.$id,
     });
-  } catch (error: any) {
-    console.error(error);
+  } catch (error: unknown) {
+    logger.error('Failed to update code', { error });
     return Response.json({ error: 'Failed to update code' }, { status: 500 });
   }
 }

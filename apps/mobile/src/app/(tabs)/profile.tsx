@@ -12,20 +12,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
-  CreditCard,
-  Award,
-  Shield,
-  HelpCircle,
   LogOut,
-  ChevronRight,
-  Target,
   Bell,
-  Star,
   BookOpen,
-  Zap,
-  Settings,
+  Award,
   Edit3,
-  TrendingUp,
   Sun,
   Moon,
 } from 'lucide-react-native';
@@ -38,156 +29,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/utils/auth/useAuth';
 import { useAppTheme, themeStyle } from '@/utils/theme';
 import { api } from '@/utils/api';
-
-const MENU_SECTIONS = [
-  {
-    title: 'Account',
-    items: [
-      { icon: CreditCard, label: 'Subscriptions & Billing', color: '#818CF8', bg: '#1E1B4B' },
-      { icon: Award, label: 'My Certificates', color: '#F59E0B', bg: '#2D1A00' },
-      { icon: Target, label: 'Target Careers', color: '#10B981', bg: '#022C22' },
-      { icon: TrendingUp, label: 'Performance Reports', color: '#0EA5E9', bg: '#0C1A29' },
-    ],
-  },
-  {
-    title: 'Preferences',
-    items: [
-      { icon: Shield, label: 'Security & Privacy', color: '#A78BFA', bg: '#1E0B3A' },
-      { icon: Settings, label: 'App Settings', color: '#64748B', bg: '#1A1A2E' },
-    ],
-  },
-  {
-    title: 'Support',
-    items: [{ icon: HelpCircle, label: 'Help Center', color: '#0EA5E9', bg: '#0C1A29' }],
-  },
-];
-
-function MenuItem({
-  icon: IconComp,
-  label,
-  color,
-  bg,
-  index,
-  onPress,
-}: {
-  icon: any;
-  label: string;
-  color: string;
-  bg: string;
-  index: number;
-  onPress: () => void;
-}) {
-  const fade = useRef(new Animated.Value(0)).current;
-  const slide = useRef(new Animated.Value(20)).current;
-  const sc = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 300,
-        delay: 100 + index * 45,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slide, {
-        toValue: 0,
-        tension: 80,
-        friction: 10,
-        delay: 100 + index * 45,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-  return (
-    <Animated.View
-      style={themeStyle({ opacity: fade, transform: [{ translateX: slide }, { scale: sc }] })}
-    >
-      <Pressable
-        onPressIn={() =>
-          Animated.spring(sc, { toValue: 0.97, useNativeDriver: true, tension: 400 }).start()
-        }
-        onPressOut={() =>
-          Animated.spring(sc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-        }
-        onPress={onPress}
-        style={themeStyle({
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
-          paddingVertical: 15,
-        })}
-      >
-        <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 14 })}>
-          <View
-            style={themeStyle({
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              backgroundColor: bg,
-              alignItems: 'center',
-              justifyContent: 'center',
-            })}
-          >
-            <IconComp size={17} color={color} />
-          </View>
-          <Text style={themeStyle({ fontWeight: '500', fontSize: 15, color: '#E2E8F0' })}>
-            {label}
-          </Text>
-        </View>
-        <ChevronRight size={16} color="#2D2D4E" />
-      </Pressable>
-    </Animated.View>
-  );
-}
-
-function StatBox({
-  val,
-  label,
-  icon,
-  colors,
-  delay,
-}: {
-  val: string;
-  label: string;
-  icon: React.ReactNode;
-  colors: [string, string];
-  delay: number;
-}) {
-  const a = useRef(new Animated.Value(0)).current;
-  const sc = useRef(new Animated.Value(0.7)).current;
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(a, { toValue: 1, duration: 300, delay, useNativeDriver: true }),
-      Animated.spring(sc, { toValue: 1, tension: 120, friction: 8, delay, useNativeDriver: true }),
-    ]).start();
-  }, []);
-  return (
-    <Animated.View style={themeStyle({ flex: 1, opacity: a, transform: [{ scale: sc }] })}>
-      <LinearGradient
-        colors={colors}
-        style={themeStyle({
-          borderRadius: 16,
-          padding: 12,
-          alignItems: 'center',
-          borderWidth: 1,
-          borderColor: '#2D2D4E',
-        })}
-      >
-        {icon}
-        <Text
-          style={themeStyle({ fontWeight: '800', fontSize: 17, color: '#F1F5F9', marginTop: 5 })}
-        >
-          {val}
-        </Text>
-        <Text
-          style={themeStyle({ fontWeight: '400', fontSize: 10, color: '#4B5563', marginTop: 1 })}
-        >
-          {label}
-        </Text>
-      </LinearGradient>
-    </Animated.View>
-  );
-}
+import type { Enrollment } from '@/types';
+import { MENU_SECTIONS, MenuItem, StatBox } from '@/components/profile';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -196,7 +39,7 @@ export default function ProfileScreen() {
   const [notif] = useState(true);
   const { signOut, auth, isAuthenticated, signIn } = useAuth();
 
-  const { data: enrollments = [] } = useQuery<any[]>({
+  const { data: enrollments = [] } = useQuery<Enrollment[]>({
     queryKey: ['my-enrollments'],
     queryFn: () => api('/api/enroll'),
     enabled: !!isAuthenticated,

@@ -29,6 +29,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme, themeStyle } from '@/utils/theme';
 import { api } from '@/utils/api';
+import type { Enrollment } from '@/types';
 
 
 
@@ -85,7 +86,7 @@ function EnrollCard({
   index,
   onContinue,
 }: {
-  item: any;
+  item: Enrollment;
   index: number;
   onContinue: () => void;
 }) {
@@ -223,7 +224,7 @@ export default function LearningScreen() {
   }, []);
 
   const theme = useAppTheme();
-  const { data: enrollments = [], isLoading, isError, refetch } = useQuery<any[]>({
+  const { data: enrollments = [], isLoading, isError, refetch } = useQuery<Enrollment[]>({
     queryKey: ['my-enrollments'],
     retry: 2,
     queryFn: () => api('/api/enroll'),
@@ -364,7 +365,7 @@ export default function LearningScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            enrollments.map((item: any, index: number) => (
+            enrollments.map((item: Enrollment, index: number) => (
               <EnrollCard
                 key={item.id}
                 item={item}

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimitByIP } from '@/lib/rate-limit';
 import {
   createAdminClient,
   createSessionClient,
@@ -7,9 +8,13 @@ import {
   serializeAppwriteUser,
 } from '@/lib/appwrite';
 import { readJsonObject, rejectCrossOrigin, requiredString } from '@/lib/api-security';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = rateLimitByIP(request, { maxRequests: 5, windowSeconds: 60 });
+    if (rateLimited) return rateLimited;
+
     const originError = rejectCrossOrigin(request);
     if (originError) return originError;
 
@@ -29,10 +34,12 @@ export async function POST(request: Request) {
     });
     response.cookies.set(getAppwriteSessionCookieName(), token, getSessionCookieOptions());
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    logger.warn('Sign-in failed', { error });
+    const err = error as Record<string, unknown>;
     return NextResponse.json(
-      { error: error?.message || 'Sign in failed' },
-      { status: error?.code === 401 ? 401 : 400 }
+      { error: (err?.message as string) || 'Sign in failed' },
+      { status: err?.code === 401 ? 401 : 400 }
     );
   }
 }

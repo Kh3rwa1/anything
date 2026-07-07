@@ -1,3 +1,12 @@
+/**
+ * @deprecated  This module is a LOCAL DEVELOPMENT fallback only.
+ * All production reads go through Appwrite (see appwrite.ts).
+ * Mock-db fallbacks in API routes are gated behind
+ * `process.env.NODE_ENV !== 'production'` and will be removed in v2.
+ *
+ * DO NOT add new methods here — write Appwrite queries instead.
+ */
+
 import fs from 'fs';
 import path from 'path';
 

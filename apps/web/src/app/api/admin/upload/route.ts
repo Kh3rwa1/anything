@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/appwrite';
 import { requireAdmin, rejectCrossOrigin } from '@/lib/api-security';
+import { logger } from '@/lib/logger';
 import { Storage } from 'node-appwrite';
 
 export async function POST(request: Request) {
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     if (originError) return originError;
 
     const formData = await request.formData();
-    const file = formData.get('file') as File | null;
+    const file = (formData as unknown as Map<string, File | string>).get('file') as File | null;
 
     if (!file) {
       return Response.json({ error: 'No file provided' }, { status: 400 });
@@ -35,8 +36,9 @@ export async function POST(request: Request) {
       url,
       id: uploadedFile.$id,
     });
-  } catch (error: any) {
-    console.error('File upload failed:', error);
-    return Response.json({ error: error?.message || 'File upload failed' }, { status: 500 });
+  } catch (error: unknown) {
+    logger.error('File upload failed', { error });
+    const message = error instanceof Error ? error.message : 'File upload failed';
+    return Response.json({ error: message }, { status: 500 });
   }
 }

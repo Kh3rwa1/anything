@@ -32,6 +32,7 @@ export async function GET(request: Request) {
       }));
       return Response.json(tests);
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite mock tests fetch failed, using local mockDB fallback', dbErr);
       const tests = mockDB.getMockTests(courseId === 'all' ? undefined : courseId);
       return Response.json(tests);
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
         ...data
       };
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite mock test create failed, using local mockDB fallback', dbErr);
       result = mockDB.createMockTest({ id: id || `test_${Date.now()}`, ...data });
     }
@@ -111,6 +113,7 @@ export async function PATCH(request: Request) {
         question_count: doc.question_count
       };
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite mock test update failed, using local mockDB fallback', dbErr);
       result = mockDB.updateMockTest(id, data);
     }
@@ -138,6 +141,7 @@ export async function DELETE(request: Request) {
       const { databases } = createAdminClient();
       await databases.deleteDocument(DATABASE_ID, COLLECTIONS.MOCK_TESTS, testId);
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite mock test delete failed, using local mockDB fallback', dbErr);
       mockDB.deleteMockTest(testId);
     }

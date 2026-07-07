@@ -1,5 +1,6 @@
 import { ID } from 'node-appwrite';
 import { NextResponse } from 'next/server';
+import { rateLimitByIP } from '@/lib/rate-limit';
 import {
   createAdminClient,
   createPublicClient,
@@ -9,9 +10,13 @@ import {
   serializeAppwriteUser,
 } from '@/lib/appwrite';
 import { optionalString, readJsonObject, rejectCrossOrigin, requiredString } from '@/lib/api-security';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = rateLimitByIP(request, { maxRequests: 3, windowSeconds: 60 });
+    if (rateLimited) return rateLimited;
+
     const originError = rejectCrossOrigin(request);
     if (originError) return originError;
 
@@ -48,10 +53,12 @@ export async function POST(request: Request) {
     );
     response.cookies.set(getAppwriteSessionCookieName(), token, getSessionCookieOptions());
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    logger.warn('Sign-up failed', { error });
+    const err = error as Record<string, unknown>;
     return NextResponse.json(
-      { error: error?.message || 'Sign up failed' },
-      { status: error?.code === 409 ? 409 : 400 }
+      { error: (err?.message as string) || 'Sign up failed' },
+      { status: err?.code === 409 ? 409 : 400 }
     );
   }
 }

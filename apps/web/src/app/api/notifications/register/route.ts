@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         );
       }
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite register push token failed, using local mockDB fallback', dbErr);
       savedToken = mockDB.registerPushToken(userId, token);
     }

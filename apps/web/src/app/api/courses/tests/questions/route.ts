@@ -32,6 +32,7 @@ export async function GET(request: Request) {
         explanation: doc.explanation,
       }));
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite questions fetch failed, using local mockDB fallback', dbErr);
       questions = mockDB.getQuestions(testId);
     }
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
         ...data
       };
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite question create failed, using local mockDB fallback', dbErr);
       result = mockDB.createQuestion({ id: `q_${Date.now()}`, ...data });
     }
@@ -110,6 +112,7 @@ export async function DELETE(request: Request) {
       const { databases } = createAdminClient();
       await databases.deleteDocument(DATABASE_ID, COLLECTIONS.QUESTIONS, questionId);
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite question delete failed, using local mockDB fallback', dbErr);
       mockDB.deleteQuestion(questionId);
     }

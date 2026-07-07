@@ -5,456 +5,32 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Dimensions,
   useWindowDimensions,
   FlatList,
   Animated,
-  Pressable,
   RefreshControl,
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Bell, Star, Clock, ChevronRight, Users, Play } from 'lucide-react-native';
-import { Image } from 'expo-image';
+import { Search, Bell, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { useAppTheme, themeStyle } from '@/utils/theme';
 import { api } from '@/utils/api';
+import type { Course } from '@/types';
+import {
+  CATEGORIES,
+  PulsingDot,
+  AnimatedDot,
+  CourseCard,
+  FeaturedCard,
+  StatPill,
+  CategoryPill,
+} from '@/components/home';
 
 // reactive W defined inside components
-
-const CATEGORIES = [
-  { id: 0, name: 'All', color: '#4F46E5' },
-  { id: 1, name: 'SDE', color: '#0EA5E9' },
-  { id: 2, name: 'Aptitude', color: '#8B5CF6' },
-  { id: 3, name: 'UPSC', color: '#F59E0B' },
-  { id: 4, name: 'Banking', color: '#10B981' },
-  { id: 5, name: 'CAT/MBA', color: '#EF4444' },
-  { id: 6, name: 'Soft Skills', color: '#EC4899' },
-];
-
-function PulsingDot() {
-  const theme = useAppTheme();
-  const pulse = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.5, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
-  return (
-    <Animated.View
-      style={themeStyle({
-        transform: [{ scale: pulse }],
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#EF4444',
-        borderWidth: 1.5,
-        borderColor: theme.screen,
-      })}
-    />
-  );
-}
-
-function AnimatedDot({ active }: { active: boolean }) {
-  const width = useRef(new Animated.Value(active ? 20 : 6)).current;
-  useEffect(() => {
-    Animated.spring(width, {
-      toValue: active ? 20 : 6,
-      useNativeDriver: false,
-      tension: 200,
-    }).start();
-  }, [active]);
-  return (
-    <Animated.View
-      style={themeStyle({
-        width,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: '#4F46E5',
-        opacity: active ? 1 : 0.35,
-      })}
-    />
-  );
-}
-
-function CourseCard({
-  course,
-  index,
-  onPress,
-}: {
-  course: any;
-  index: number;
-  onPress: () => void;
-}) {
-  const fade = useRef(new Animated.Value(0)).current;
-  const slide = useRef(new Animated.Value(50)).current;
-  const scale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 80,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slide, {
-        toValue: 0,
-        tension: 70,
-        friction: 10,
-        delay: index * 80,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-  return (
-    <Animated.View
-      style={themeStyle({ opacity: fade, transform: [{ translateY: slide }, { scale }] })}
-    >
-      <Pressable
-        onPressIn={() =>
-          Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, tension: 400 }).start()
-        }
-        onPressOut={() =>
-          Animated.spring(scale, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-        }
-        onPress={onPress}
-        style={themeStyle({
-          flexDirection: 'row',
-          backgroundColor: '#1A1A2E',
-          borderRadius: 20,
-          padding: 12,
-          marginBottom: 12,
-          gap: 14,
-          borderWidth: 1,
-          borderColor: '#2D2D4E',
-        })}
-      >
-        <View
-          style={themeStyle({
-            borderRadius: 14,
-            overflow: 'hidden',
-            width: 90,
-            height: 90,
-            flexShrink: 0,
-          })}
-        >
-          <Image
-            source={{
-              uri:
-                course.img ||
-                course.thumbnail_url ||
-                'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400',
-            }}
-            style={themeStyle({ width: 90, height: 90 })}
-            contentFit="cover"
-          />
-        </View>
-        <View style={themeStyle({ flex: 1, justifyContent: 'space-between', paddingVertical: 2 })}>
-          <View>
-            {(course.tag || course.level) && (
-              <View
-                style={themeStyle({
-                  backgroundColor: `${course.tagColor || '#4F46E5'}25`,
-                  borderRadius: 5,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  alignSelf: 'flex-start',
-                  marginBottom: 4,
-                })}
-              >
-                <Text
-                  style={themeStyle({
-                    fontWeight: '700',
-                    fontSize: 9,
-                    color: course.tagColor || '#818CF8',
-                    letterSpacing: 0.5,
-                  })}
-                >
-                  {course.tag || course.level}
-                </Text>
-              </View>
-            )}
-            <Text
-              style={themeStyle({
-                fontWeight: '700',
-                fontSize: 14,
-                color: '#F1F5F9',
-                lineHeight: 19,
-                marginBottom: 2,
-              })}
-              numberOfLines={2}
-            >
-              {course.title}
-            </Text>
-            {course.sub && (
-              <Text
-                style={themeStyle({
-                  fontWeight: '400',
-                  fontSize: 11,
-                  color: '#4B5563',
-                  marginBottom: 4,
-                })}
-                numberOfLines={1}
-              >
-                {course.sub}
-              </Text>
-            )}
-          </View>
-          <View
-            style={themeStyle({
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            })}
-          >
-            <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 8 })}>
-              <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
-                <Star size={11} color="#F59E0B" fill="#F59E0B" />
-                <Text style={themeStyle({ fontWeight: '700', fontSize: 11, color: '#E2E8F0' })}>
-                  {course.rating || 'New'}
-                </Text>
-              </View>
-              <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
-                <Clock size={11} color="#4B5563" />
-                <Text style={themeStyle({ fontWeight: '400', fontSize: 11, color: '#4B5563' })}>
-                  {course.duration || 'Self-paced'}
-                </Text>
-              </View>
-            </View>
-            <Text style={themeStyle({ fontWeight: '800', fontSize: 15, color: '#818CF8' })}>
-              ₹{Number(course.price ?? 0).toLocaleString('en-IN')}
-            </Text>
-          </View>
-        </View>
-      </Pressable>
-    </Animated.View>
-  );
-}
-
-function FeaturedCard({ item, onPress }: { item: any; onPress: () => void }) {
-  const { width: W } = useWindowDimensions();
-  const cardScale = useRef(new Animated.Value(1)).current;
-  return (
-    <Pressable
-      onPressIn={() =>
-        Animated.spring(cardScale, { toValue: 0.975, useNativeDriver: true, tension: 400 }).start()
-      }
-      onPressOut={() =>
-        Animated.spring(cardScale, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-      }
-      onPress={onPress}
-    >
-      <Animated.View
-        style={themeStyle({
-          width: W - 32,
-          borderRadius: 24,
-          overflow: 'hidden',
-          height: 220,
-          transform: [{ scale: cardScale }],
-        })}
-      >
-        <Image
-          source={{ uri: item.img }}
-          style={themeStyle({ position: 'absolute', width: '100%', height: '100%' })}
-          contentFit="cover"
-        />
-
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.9)']}
-          style={themeStyle({ position: 'absolute', bottom: 0, left: 0, right: 0, height: '70%' })}
-        />
-
-        <View
-          style={themeStyle({
-            position: 'absolute',
-            top: 14,
-            left: 14,
-            backgroundColor: '#F59E0B',
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-          })}
-        >
-          <Text
-            style={themeStyle({
-              fontWeight: '800',
-              fontSize: 9,
-              color: '#0A0A0F',
-              letterSpacing: 1,
-            })}
-          >
-            {item.tag}
-          </Text>
-        </View>
-        <View
-          style={themeStyle({
-            position: 'absolute',
-            top: 10,
-            right: 14,
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.3)',
-          })}
-        >
-          <Play size={14} color="#FFFFFF" fill="#FFFFFF" />
-        </View>
-        <View
-          style={themeStyle({ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16 })}
-        >
-          <Text
-            style={themeStyle({
-              fontWeight: '800',
-              fontSize: 17,
-              color: '#FFFFFF',
-              lineHeight: 22,
-              marginBottom: 6,
-            })}
-            numberOfLines={2}
-          >
-            {item.title}
-          </Text>
-          <View
-            style={themeStyle({
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            })}
-          >
-            <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 12 })}>
-              <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
-                <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#FFFFFF' })}>
-                  {item.rating}
-                </Text>
-              </View>
-              <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 3 })}>
-                <Users size={12} color="#94A3B8" />
-                <Text style={themeStyle({ fontWeight: '500', fontSize: 12, color: '#94A3B8' })}>
-                  {item.students}
-                </Text>
-              </View>
-            </View>
-            <View
-              style={themeStyle({
-                backgroundColor: '#4F46E5',
-                borderRadius: 99,
-                paddingHorizontal: 14,
-                paddingVertical: 7,
-              })}
-            >
-              <Text style={themeStyle({ fontWeight: '700', fontSize: 12, color: '#FFFFFF' })}>
-                ₹{Number(item.price ?? 0).toLocaleString('en-IN')}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Animated.View>
-    </Pressable>
-  );
-}
-
-function StatPill({
-  n,
-  label,
-  color,
-  delay,
-}: {
-  n: string;
-  label: string;
-  color: string;
-  delay: number;
-}) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.spring(anim, {
-      toValue: 1,
-      tension: 80,
-      friction: 8,
-      delay,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-  return (
-    <Animated.View
-      style={themeStyle({
-        flex: 1,
-        backgroundColor: '#1A1A2E',
-        borderRadius: 16,
-        paddingVertical: 14,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#2D2D4E',
-        opacity: anim,
-        transform: [{ scale: anim }],
-      })}
-    >
-      <Text style={themeStyle({ fontWeight: '800', fontSize: 20, color })}>{n}</Text>
-      <Text style={themeStyle({ fontWeight: '500', fontSize: 11, color: '#4B5563', marginTop: 2 })}>
-        {label}
-      </Text>
-    </Animated.View>
-  );
-}
-
-function CategoryPill({
-  cat,
-  active,
-  onPress,
-}: {
-  cat: (typeof CATEGORIES)[0];
-  active: boolean;
-  onPress: () => void;
-}) {
-  const sc = useRef(new Animated.Value(1)).current;
-  return (
-    <Pressable
-      onPressIn={() =>
-        Animated.spring(sc, { toValue: 0.92, useNativeDriver: true, tension: 400 }).start()
-      }
-      onPressOut={() =>
-        Animated.spring(sc, { toValue: 1, useNativeDriver: true, tension: 400 }).start()
-      }
-      onPress={onPress}
-    >
-      <Animated.View
-        style={themeStyle({
-          paddingHorizontal: 18,
-          paddingVertical: 10,
-          borderRadius: 99,
-          marginRight: 6,
-          backgroundColor: active ? cat.color : '#1A1A2E',
-          borderWidth: 1,
-          borderColor: active ? cat.color : '#2D2D4E',
-          transform: [{ scale: sc }],
-        })}
-      >
-        <Text
-          style={themeStyle({
-            fontWeight: '700',
-            fontSize: 13,
-            color: active ? '#FFFFFF' : '#64748B',
-          })}
-        >
-          {cat.name}
-        </Text>
-      </Animated.View>
-    </Pressable>
-  );
-}
 
 export default function ExploreScreen() {
   const { width: W } = useWindowDimensions();
@@ -494,24 +70,24 @@ export default function ExploreScreen() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: apiCourses = [], isLoading, isError, refetch } = useQuery<any[]>({
+  const { data: apiCourses = [], isLoading, isError, refetch } = useQuery<Course[]>({
     queryKey: ['courses'],
     retry: 2,
     queryFn: () => api('/api/courses'),
   });
 
-  const courses = apiCourses.map((c: any) => ({
+  const courses = apiCourses.map((c: Course) => ({
     ...c,
     id: String(c.id),
     img: c.thumbnail_url,
   }));
 
-  const featuredCourses = courses.slice(0, 3).map((c: any) => ({
+  const featuredCourses = courses.slice(0, 3).map((c: Course) => ({
     ...c,
     tag: c.category_name?.toUpperCase() || 'COURSE',
   }));
 
-  const filteredCourses = courses.filter((c: any) => {
+  const filteredCourses = courses.filter((c: Course) => {
     const matchesSearch =
       !searchQuery ||
       c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -727,7 +303,7 @@ export default function ExploreScreen() {
               <ChevronRight size={14} color="#818CF8" />
             </TouchableOpacity>
           </View>
-          {filteredCourses.map((course: any, index: number) => (
+          {filteredCourses.map((course: Course, index: number) => (
             <CourseCard
               key={course.id}
               course={course}

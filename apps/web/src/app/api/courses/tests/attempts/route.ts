@@ -42,6 +42,7 @@ export async function GET(request: Request) {
       });
       return Response.json(attempts);
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite attempts fetch failed, using local mockDB fallback', dbErr);
       const attempts = mockDB.getAttempts(userId, courseId || undefined);
       return Response.json(attempts);

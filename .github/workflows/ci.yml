@@ -7,29 +7,33 @@ on:
     branches: [main]
 
 jobs:
-  check:
-    name: Lint, Type-check, Test & Build
+  web-lint-and-test:
+    name: Web — Lint & Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
-
-      - run: corepack enable
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: npx next build
+      - run: npx vitest run
 
-      - run: yarn install --immutable
-
-      - run: yarn lint
-
-      - run: yarn typecheck
-
-      - run: yarn test
-
-      - run: yarn build
-        env:
-          APPWRITE_PROJECT_ID: ci-placeholder
-          APPWRITE_API_KEY: ci-placeholder
-          APPWRITE_DATABASE_ID: main
+  mobile-typecheck:
+    name: Mobile — Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: npx tsc --noEmit

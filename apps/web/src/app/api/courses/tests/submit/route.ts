@@ -52,6 +52,7 @@ export async function POST(request: Request) {
           correct_index: doc.correct_index,
         }));
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite questions load during submission failed, using mockDB fallback', dbErr);
     }
 
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
         completed_at: doc.completed_at
       };
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite save attempt failed, using local mockDB fallback', dbErr);
       savedAttempt = mockDB.saveAttempt(attemptData);
     }

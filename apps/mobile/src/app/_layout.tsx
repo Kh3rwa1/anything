@@ -11,6 +11,7 @@
 'use client';
 
 import { ErrorBoundary } from '@/__create/ErrorBoundary';
+import { ScreenViewTracker } from '@/__create/analytics';
 import { useAuth } from '@/utils/auth/useAuth';
 import { AuthModal } from '@/utils/auth/useAuthModal';
 import { AppThemeProvider } from '@/utils/theme';
@@ -62,6 +63,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <AppThemeProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
+            <ScreenViewTracker />
             <Stack screenOptions={{ headerShown: false }} />
             <AuthModal />
           </GestureHandlerRootView>

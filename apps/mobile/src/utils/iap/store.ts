@@ -1,11 +1,12 @@
 import { create } from 'zustand';
+import type { PurchasesOfferings } from 'react-native-purchases';
 
 interface InAppPurchaseState {
 	isReady: boolean;
-	offerings: any | null;
+	offerings: PurchasesOfferings | null;
 	isSubscribed: boolean;
 	setIsSubscribed: (isSubscribed: boolean) => void;
-	setOfferings: (offerings: any | null) => void;
+	setOfferings: (offerings: PurchasesOfferings | null) => void;
 	setIsReady: (isReady: boolean) => void;
 }
 

@@ -58,6 +58,7 @@ export async function POST(request: Request) {
       ]);
       tokens = tokensRes.documents.map(d => d.token);
     } catch (e) {
+      if (process.env.NODE_ENV === 'production') throw e;
       console.warn('Appwrite list push tokens failed, falling back to mockDB');
     }
 

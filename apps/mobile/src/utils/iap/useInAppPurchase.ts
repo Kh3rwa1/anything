@@ -1,4 +1,5 @@
 import Purchases, { LOG_LEVEL, PRODUCT_CATEGORY } from 'react-native-purchases';
+import type { PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { useCallback, useRef, useState } from 'react';
 import { useInAppPurchaseStore } from './store';
@@ -18,7 +19,7 @@ export const getRevenueCatAPIKey = (): string | undefined => {
   });
 };
 
-export async function loadOfferings(setOfferings: (o: any) => void) {
+export async function loadOfferings(setOfferings: (o: PurchasesOfferings | null) => void) {
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
     try {
       const result = await Purchases.getOfferings();
@@ -63,7 +64,7 @@ export async function initiatePurchases({
 }: {
   isConfigured: { current: boolean };
   setIsReady: (v: boolean) => void;
-  setOfferings: (o: any) => void;
+  setOfferings: (o: PurchasesOfferings | null) => void;
   setIsSubscribed: (v: boolean) => void;
 }) {
   if (isConfigured.current) return;
@@ -87,7 +88,7 @@ export async function initiatePurchases({
   }
 }
 
-export function getAvailablePackagesFromOfferings(offerings: any) {
+export function getAvailablePackagesFromOfferings(offerings: PurchasesOfferings | null) {
   const offering = offerings?.current;
   if (!offering) {
     return [];
@@ -95,9 +96,9 @@ export function getAvailablePackagesFromOfferings(offerings: any) {
   return offering.availablePackages;
 }
 
-export function getSubscriptionsFromOfferings(offerings: any) {
+export function getSubscriptionsFromOfferings(offerings: PurchasesOfferings | null) {
   return getAvailablePackagesFromOfferings(offerings).filter(
-    (pkg: any) =>
+    (pkg: PurchasesPackage) =>
       pkg.product.productCategory === PRODUCT_CATEGORY.SUBSCRIPTION
   );
 }
@@ -106,7 +107,7 @@ export async function executePurchase({
   pkg,
   setIsSubscribed,
 }: {
-  pkg: any;
+  pkg: PurchasesPackage;
   setIsSubscribed: (v: boolean) => void;
 }) {
   try {
@@ -172,7 +173,7 @@ export function useInAppPurchase() {
   );
 
   const purchasePackage = useCallback(
-    async ({ pkg }: { pkg: any }) => {
+    async ({ pkg }: { pkg: PurchasesPackage }) => {
       setIsPurchasing(true);
       try {
         return await executePurchase({ pkg, setIsSubscribed });

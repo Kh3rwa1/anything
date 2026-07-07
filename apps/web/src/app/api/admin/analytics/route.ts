@@ -15,13 +15,15 @@ export async function GET() {
     const totalStudents = usersList.total;
 
     const enrollRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
-      Query.limit(5000)
+      Query.limit(5000),
+      Query.select(['course_id', '$createdAt'])
     ]);
     const totalEnrollments = enrollRes.total;
 
     // Map course prices
     const coursesRes = await databases.listDocuments(DATABASE_ID, COLLECTIONS.COURSES, [
-      Query.limit(100)
+      Query.limit(100),
+      Query.select(['$id', 'title', 'price', 'category_id'])
     ]);
     const courseMap: Record<string, any> = {};
     for (const course of coursesRes.documents) {

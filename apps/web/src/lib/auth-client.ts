@@ -34,8 +34,9 @@ async function postAuth(path: string, body?: Record<string, unknown>): Promise<A
       return { data: null, error: { message: json.error || 'Authentication failed' } };
     }
     return { data: json, error: null };
-  } catch (error: any) {
-    return { data: null, error: { message: error?.message || 'Authentication failed' } };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Authentication failed';
+    return { data: null, error: { message } };
   }
 }
 
@@ -73,7 +74,7 @@ export function useSession() {
         }
         const json = await response.json();
         if (!cancelled) setData(json);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         if (!cancelled) setIsPending(false);

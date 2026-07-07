@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         };
       });
     } catch (dbErr) {
+      if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite performance attempts fetch failed, using local mockDB fallback', dbErr);
       attempts = mockDB.getAllAttempts(userId);
     }
