@@ -447,7 +447,7 @@ export default function CourseDetail() {
       Animated.spring(submitSc, { toValue: 1, useNativeDriver: true, tension: 400 }),
     ]).start();
     try {
-      const data = await api('/api/enroll', {
+      const data = await api<{ already_enrolled?: boolean; discount_pct?: number }>('/api/enroll', {
         method: 'POST',
         body: JSON.stringify({ courseId: id, code: trimmed }),
       });
@@ -455,7 +455,7 @@ export default function CourseDetail() {
       setTimeout(() => {
         const msg = data.already_enrolled
           ? `You're already enrolled in ${course.title}!`
-          : data.discount_pct > 0
+          : (data.discount_pct ?? 0) > 0
             ? `🎉 ${data.discount_pct}% discount applied! You're enrolled in ${course.title}.`
             : `🎉 You've successfully enrolled in ${course.title}.`;
         Alert.alert('Enrolled!', msg, [{ text: 'Start Learning', onPress: () => router.back() }]);

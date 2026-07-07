@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import type { ThemeClasses } from './use-theme-classes';
+import { useSession } from '@/lib/auth-client';
 
 interface NavbarProps {
   theme: ThemeClasses;
@@ -20,6 +21,7 @@ export function Navbar({
   onInstallClick,
 }: NavbarProps) {
   const { isDark } = theme;
+  const { data: session } = useSession();
 
   return (
     <nav
@@ -67,18 +69,39 @@ export function Navbar({
             </button>
           )}
 
-          <Link
-            href="/account/signin"
-            className={`text-sm font-bold ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors duration-200`}
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/account/signup"
-            className="px-5 py-2.5 text-sm font-extrabold text-white bg-brand-primary hover:bg-brand-primary/90 rounded-xl transition-all duration-200 border border-white/10 hover:shadow-lg hover:shadow-brand-primary/25 active:scale-95"
-          >
-            Get Started Free
-          </Link>
+          {session?.user ? (
+            <>
+              {session.user.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  className="px-5 py-2.5 text-sm font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20 active:scale-95"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              <Link
+                href="/account/logout"
+                className={`text-sm font-bold ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors duration-200`}
+              >
+                Sign Out
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/account/signin"
+                className={`text-sm font-bold ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'} transition-colors duration-200`}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/account/signup"
+                className="px-5 py-2.5 text-sm font-extrabold text-white bg-brand-primary hover:bg-brand-primary/90 rounded-xl transition-all duration-200 border border-white/10 hover:shadow-lg hover:shadow-brand-primary/25 active:scale-95"
+              >
+                Get Started Free
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle Panel */}
@@ -166,18 +189,43 @@ export function Navbar({
           )}
           <div className={`h-px ${isDark ? 'bg-white/[0.06]' : 'bg-slate-200'} my-1`} />
           <div className="flex flex-col gap-2.5 px-2">
-            <Link
-              href="/account/signin"
-              className={`w-full text-center py-2.5 text-sm font-bold ${isDark ? 'text-slate-300 border-white/[0.08] bg-white/[0.02]' : 'text-slate-700 border-slate-200 bg-slate-50'} border rounded-xl`}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/account/signup"
-              className="w-full text-center py-2.5 text-sm font-bold text-white bg-brand-primary rounded-xl"
-            >
-              Get Started Free
-            </Link>
+            {session?.user ? (
+              <>
+                {session.user.role === 'admin' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full text-center py-2.5 text-sm font-bold text-white bg-indigo-600 rounded-xl"
+                  >
+                    Admin Panel
+                  </Link>
+                )}
+                <Link
+                  href="/account/logout"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`w-full text-center py-2.5 text-sm font-bold ${isDark ? 'text-slate-300 border-white/[0.08] bg-white/[0.02]' : 'text-slate-700 border-slate-200 bg-slate-50'} border rounded-xl`}
+                >
+                  Sign Out
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/account/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`w-full text-center py-2.5 text-sm font-bold ${isDark ? 'text-slate-300 border-white/[0.08] bg-white/[0.02]' : 'text-slate-700 border-slate-200 bg-slate-50'} border rounded-xl`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/account/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2.5 text-sm font-bold text-white bg-brand-primary rounded-xl"
+                >
+                  Get Started Free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

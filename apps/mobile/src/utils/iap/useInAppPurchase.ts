@@ -46,7 +46,7 @@ export async function fetchSubscriptionStatus(
   setIsSubscribed: (v: boolean) => void
 ) {
   try {
-    const data = await api('/api/revenue-cat/get-subscription-status', {
+    const data = await api<{ hasAccess: boolean }>('/api/revenue-cat/get-subscription-status', {
       method: 'POST',
     });
     setIsSubscribed(data.hasAccess);

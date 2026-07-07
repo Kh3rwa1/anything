@@ -13,9 +13,9 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { type FormEvent, Suspense, useState } from 'react';
+import { type FormEvent, Suspense, useState, useEffect } from 'react';
 import { SocialSignInButtons } from '@/components/SocialSignInButtons';
-import { authClient } from '@/lib/auth-client';
+import { authClient, useSession } from '@/lib/auth-client';
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -25,24 +25,34 @@ function SignInForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending && session?.user) {
+      const redirectUrl = session.user.role === 'admin' ? '/admin' : callbackUrl;
+      window.location.href = redirectUrl;
+    }
+  }, [session, isPending, callbackUrl]);
+
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error: signInError } = await authClient.signIn.email({
+    const result = await authClient.signIn.email({
       email,
       password,
     });
 
-    if (signInError) {
-      setError(signInError.message ?? 'Sign in failed');
+    if (result.error) {
+      setError(result.error.message ?? 'Sign in failed');
       setLoading(false);
       return;
     }
 
     if (typeof window !== 'undefined') {
-      window.location.href = callbackUrl;
+      const redirectUrl = result.data?.user?.role === 'admin' ? '/admin' : callbackUrl;
+      window.location.href = redirectUrl;
     } else {
       console.warn('signin: window is undefined; cannot redirect to callbackUrl');
     }

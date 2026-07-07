@@ -29,6 +29,7 @@ import {
   executePurchase,
   executeRestore,
 } from '../useInAppPurchase';
+import type { PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
 
 declare var global: any;
 
@@ -275,7 +276,7 @@ describe('fetchSubscriptionStatus', () => {
 
 describe('getAvailablePackagesFromOfferings', () => {
   test('returns packages from current offering', () => {
-    const offerings = makeOfferings();
+    const offerings = makeOfferings() as unknown as PurchasesOfferings;
     const packages = getAvailablePackagesFromOfferings(offerings);
     expect(packages).toHaveLength(2);
     expect(packages[0].identifier).toBe('lifetime');
@@ -287,14 +288,14 @@ describe('getAvailablePackagesFromOfferings', () => {
   });
 
   test('BUG FIX: returns [] when current is null (old code threw)', () => {
-    expect(() => getAvailablePackagesFromOfferings(makeOfferings(false))).not.toThrow();
-    expect(getAvailablePackagesFromOfferings(makeOfferings(false))).toEqual([]);
+    expect(() => getAvailablePackagesFromOfferings(makeOfferings(false) as unknown as PurchasesOfferings)).not.toThrow();
+    expect(getAvailablePackagesFromOfferings(makeOfferings(false) as unknown as PurchasesOfferings)).toEqual([]);
   });
 });
 
 describe('getSubscriptionsFromOfferings', () => {
   test('filters by SUBSCRIPTION category', () => {
-    const subs = getSubscriptionsFromOfferings(makeOfferings());
+    const subs = getSubscriptionsFromOfferings(makeOfferings() as unknown as PurchasesOfferings);
     expect(subs).toHaveLength(1);
     expect(subs[0].identifier).toBe('lifetime');
   });
@@ -310,7 +311,7 @@ describe('executePurchase', () => {
     const customerInfo = { entitlements: { active: { pro: {} } } };
     mockPurchasePackage.mockResolvedValue({ customerInfo });
     const result = await executePurchase({
-      pkg: { identifier: 'test' },
+      pkg: { identifier: 'test' } as unknown as PurchasesPackage,
       setIsSubscribed: jest.fn(),
     });
     expect(mockPurchasePackage).toHaveBeenCalledWith({ identifier: 'test' });
@@ -321,7 +322,7 @@ describe('executePurchase', () => {
   test('returns cancelled when user cancels', async () => {
     mockPurchasePackage.mockRejectedValue({ userCancelled: true });
     const result = await executePurchase({
-      pkg: { identifier: 'test' },
+      pkg: { identifier: 'test' } as unknown as PurchasesPackage,
       setIsSubscribed: jest.fn(),
     });
     expect(result).toEqual({ success: false, cancelled: true });
@@ -330,7 +331,7 @@ describe('executePurchase', () => {
   test('returns failure on error', async () => {
     mockPurchasePackage.mockRejectedValue(new Error('payment failed'));
     const result = await executePurchase({
-      pkg: { identifier: 'test' },
+      pkg: { identifier: 'test' } as unknown as PurchasesPackage,
       setIsSubscribed: jest.fn(),
     });
     expect(result).toEqual({ success: false, cancelled: false });
@@ -341,7 +342,7 @@ describe('executePurchase', () => {
       customerInfo: { entitlements: { active: {} } },
     });
     const setIsSubscribed = jest.fn();
-    await executePurchase({ pkg: { identifier: 'test' }, setIsSubscribed });
+    await executePurchase({ pkg: { identifier: 'test' } as unknown as PurchasesPackage, setIsSubscribed });
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/revenue-cat/get-subscription-status',
       expect.objectContaining({ method: 'POST' })

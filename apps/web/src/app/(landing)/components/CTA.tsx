@@ -1,12 +1,28 @@
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 import type { ThemeClasses } from './use-theme-classes';
+import { useSession } from '@/lib/auth-client';
 
 interface CTAProps {
   theme: ThemeClasses;
 }
 
 export function CTA({ theme }: CTAProps) {
+  const { data: session } = useSession();
+
+  let ctaLink = '/account/signup';
+  let ctaText = 'Start Free Registration';
+
+  if (session?.user) {
+    if (session.user.role === 'admin') {
+      ctaLink = '/admin';
+      ctaText = 'Go to Admin Panel';
+    } else {
+      ctaLink = '#experience';
+      ctaText = 'Open Learning App';
+    }
+  }
+
   return (
     <section className="py-24 px-6 relative reveal-on-scroll">
       <div className={`max-w-5xl mx-auto bg-gradient-to-br ${theme.cta} rounded-3xl p-8 sm:p-16 text-center relative overflow-hidden border shadow-2xl`}>
@@ -24,10 +40,10 @@ export function CTA({ theme }: CTAProps) {
             Join thousands of students studying for their careers. Create your free account and start learning now!
           </p>
           <Link
-            href="/account/signup"
+            href={ctaLink}
             className={`inline-flex items-center gap-2 px-8 py-4 text-base font-black ${theme.ctaButton} rounded-2xl transition-all duration-200 active:scale-95 group`}
           >
-            Start Free Registration
+            {ctaText}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

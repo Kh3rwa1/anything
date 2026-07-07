@@ -45,7 +45,7 @@ export default function TestSessionScreen() {
     queryKey: ['test-session-details', id],
     enabled: Boolean(id),
     queryFn: async () => {
-      const list = await api('/api/courses/tests?course_id=all');
+      const list = await api<any[]>('/api/courses/tests?course_id=all');
       return list.find((t: any) => String(t.id) === String(id));
     },
   });
@@ -54,7 +54,7 @@ export default function TestSessionScreen() {
   const { data: questions = [], isLoading: questionsLoading } = useQuery<Question[]>({
     queryKey: ['test-session-questions', id],
     enabled: Boolean(id) && testStarted,
-    queryFn: () => api(`/api/courses/tests/questions?test_id=${id}`),
+    queryFn: () => api<Question[]>(`/api/courses/tests/questions?test_id=${id}`),
   });
 
   // Submit test response
@@ -64,7 +64,7 @@ export default function TestSessionScreen() {
         questionId: q.id,
         selectedOptionIndex: answers[q.id] !== undefined ? answers[q.id] : -1,
       }));
-      return api('/api/courses/tests/submit', {
+      return api<{ attemptId: string }>('/api/courses/tests/submit', {
         method: 'POST',
         body: JSON.stringify({
           testId: id,

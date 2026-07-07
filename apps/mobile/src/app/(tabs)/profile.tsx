@@ -95,7 +95,7 @@ export default function ProfileScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
-              const res = await api('/api/auth/delete-account', { method: 'POST' });
+              const res = await api<{ success: boolean; error?: string }>('/api/auth/delete-account', { method: 'POST' });
               if (res.success) {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 signOut();

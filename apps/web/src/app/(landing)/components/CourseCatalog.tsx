@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Star, Users } from 'lucide-react';
 import type { ThemeClasses } from './use-theme-classes';
 import { COURSES, PARTNERS } from './constants';
+import { useSession } from '@/lib/auth-client';
 
 interface CourseCatalogProps {
   theme: ThemeClasses;
@@ -9,6 +10,17 @@ interface CourseCatalogProps {
 
 export function CourseCatalog({ theme }: CourseCatalogProps) {
   const { isDark } = theme;
+  const { data: session } = useSession();
+
+  let ctaLink = '/account/signup';
+
+  if (session?.user) {
+    if (session.user.role === 'admin') {
+      ctaLink = '/admin';
+    } else {
+      ctaLink = '#experience';
+    }
+  }
 
   return (
     <>
@@ -46,7 +58,7 @@ export function CourseCatalog({ theme }: CourseCatalogProps) {
               </h2>
             </div>
             <Link
-              href="/account/signup"
+              href={ctaLink}
               className="mt-4 md:mt-0 inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:text-brand-primary/80 transition-colors group"
             >
               Explore Full Catalog
@@ -95,7 +107,7 @@ export function CourseCatalog({ theme }: CourseCatalogProps) {
                   <div className="flex items-center justify-between border-t border-slate-100 pt-5">
                     <span className="text-xl font-black text-slate-900">{c.price}</span>
                     <Link
-                      href="/account/signup"
+                      href={ctaLink}
                       className="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 active:scale-95 shadow-sm"
                     >
                       Enroll Now

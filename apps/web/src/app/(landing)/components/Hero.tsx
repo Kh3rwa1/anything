@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Zap } from 'lucide-react';
 import type { ThemeClasses } from './use-theme-classes';
 import { STATS } from './constants';
+import { useSession } from '@/lib/auth-client';
 
 interface HeroProps {
   theme: ThemeClasses;
@@ -10,6 +11,20 @@ interface HeroProps {
 
 export function Hero({ theme, onInstallClick }: HeroProps) {
   const { isDark } = theme;
+  const { data: session } = useSession();
+
+  let ctaLink = '/account/signup';
+  let ctaText = 'Start Learning Free';
+
+  if (session?.user) {
+    if (session.user.role === 'admin') {
+      ctaLink = '/admin';
+      ctaText = 'Go to Admin Panel';
+    } else {
+      ctaLink = '#experience';
+      ctaText = 'Open Learning App';
+    }
+  }
 
   return (
     <section className="pt-40 pb-28 px-6 relative">
@@ -37,10 +52,10 @@ export function Hero({ theme, onInstallClick }: HeroProps) {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20 animate-hero-fade-up [animation-delay:450ms]">
           <Link
-            href="/account/signup"
+            href={ctaLink}
             className="inline-flex items-center gap-2.5 px-8 py-4 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 shadow-sm active:scale-95 group"
           >
-            Start Learning Free
+            {ctaText}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
           <button

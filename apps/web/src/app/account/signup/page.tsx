@@ -15,9 +15,9 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { type FormEvent, Suspense, useState } from 'react';
+import { type FormEvent, Suspense, useState, useEffect } from 'react';
 import { SocialSignInButtons } from '@/components/SocialSignInButtons';
-import { authClient } from '@/lib/auth-client';
+import { authClient, useSession } from '@/lib/auth-client';
 
 function SignUpForm() {
   const searchParams = useSearchParams();
@@ -26,6 +26,15 @@ function SignUpForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending && session?.user) {
+      const redirectUrl = session.user.role === 'admin' ? '/admin' : callbackUrl;
+      window.location.href = redirectUrl;
+    }
+  }, [session, isPending, callbackUrl]);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
