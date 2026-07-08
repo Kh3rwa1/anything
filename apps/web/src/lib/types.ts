@@ -1,10 +1,3 @@
-/**
- * Shared API response types for IAs Academy.
- * Used by web admin pages and consumed by mobile app via API responses.
- */
-
-import type { LucideIcon } from 'lucide-react-native';
-
 export interface Course {
   id: string;
   title: string;
@@ -80,14 +73,3 @@ export interface ApiUser {
   image: string;
 }
 
-export interface MenuItem {
-  icon: LucideIcon;
-  label: string;
-  color: string;
-  bg: string;
-}
-
-export interface MenuSection {
-  title: string;
-  items: MenuItem[];
-}
