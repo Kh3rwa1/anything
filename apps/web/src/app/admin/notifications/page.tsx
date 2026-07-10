@@ -128,11 +128,12 @@ export default function NotificationsPage() {
   const avgOpenRate = totalReach > 0 ? Math.round((totalOpened / totalReach) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="admin-page space-y-6 max-w-6xl">
       {/* Header */}
       <div>
-        <p className="text-sm font-medium text-slate-500 mb-1">Communication</p>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notifications</h1>
+        <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-600"><span className="h-px w-5 bg-violet-500" />Communication</p>
+        <h1 className="text-3xl font-semibold text-slate-950 tracking-[-0.045em]">Notifications</h1>
+        <p className="mt-2 text-sm text-slate-500">Create clear, timely moments for every learner.</p>
       </div>
 
       {/* Stats */}
@@ -165,7 +166,8 @@ export default function NotificationsPage() {
         ].map((s, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4"
+            className="premium-lift bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4"
+            style={{ transitionDelay: `${i * 45}ms` }}
           >
             <div
               className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center flex-shrink-0`}
@@ -182,7 +184,7 @@ export default function NotificationsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
         {/* Compose */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="admin-glass-card xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-5">
             <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
               <Plus className="w-4 h-4 text-indigo-600" />
@@ -270,7 +272,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* History */}
-        <div className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="admin-glass-card xl:col-span-3 bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="flex items-center gap-2 px-6 py-5 border-b border-slate-100">
             <Clock className="w-4 h-4 text-slate-400" />
             <h2 className="text-base font-bold text-slate-900">Sent History</h2>

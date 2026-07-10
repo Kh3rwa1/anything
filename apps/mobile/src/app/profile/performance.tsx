@@ -244,7 +244,7 @@ export default function PerformanceDashboard() {
                       {attempt.test_title || 'Mock Test'}
                     </Text>
                     <Text style={themeStyle({ fontWeight: '400', fontSize: 10, color: '#4B5563', marginTop: 4 })}>
-                      Score: {attempt.correct_answers}/{attempt.total_questions} correct
+                      Score: {attempt.correct_count ?? attempt.correct_answers ?? 0}/{attempt.total_questions} correct
                     </Text>
                   </View>
                   <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 6 })}>

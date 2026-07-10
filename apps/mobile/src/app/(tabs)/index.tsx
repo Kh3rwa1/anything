@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Bell, ChevronRight } from 'lucide-react-native';
+import { Search, Bell, ChevronRight, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -196,6 +196,32 @@ export default function ExploreScreen() {
               style={themeStyle({ flex: 1, fontSize: 14, color: '#E2E8F0' })}
             />
           </View>
+          <LinearGradient
+            colors={['#302E7A', '#1D1B4D', '#121222']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={themeStyle({
+              marginTop: 16,
+              borderRadius: 22,
+              padding: 18,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: '#4946A3',
+              minHeight: 118,
+              justifyContent: 'space-between',
+            })}
+          >
+            <View style={themeStyle({ position: 'absolute', width: 160, height: 160, borderRadius: 80, right: -48, top: -58, backgroundColor: '#7C3AED55' })} />
+            <View style={themeStyle({ position: 'absolute', width: 100, height: 100, borderRadius: 50, right: 24, bottom: -56, backgroundColor: '#EC489955' })} />
+            <View style={themeStyle({ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#FFFFFF16', borderRadius: 99, paddingHorizontal: 9, paddingVertical: 4 })}>
+              <Sparkles size={11} color="#C4B5FD" />
+              <Text style={themeStyle({ color: '#DDD6FE', fontSize: 10, fontWeight: '800', letterSpacing: 0.4 })}>YOUR NEXT BREAKTHROUGH</Text>
+            </View>
+            <View>
+              <Text style={themeStyle({ color: '#FFFFFF', fontSize: 21, lineHeight: 26, fontWeight: '800', letterSpacing: -0.5 })}>Learn something that{`\n`}moves you forward.</Text>
+              <Text style={themeStyle({ color: '#C4B5FD', fontSize: 12, lineHeight: 18, marginTop: 6, fontWeight: '500' })}>Short lessons, sharper practice, real confidence.</Text>
+            </View>
+          </LinearGradient>
         </Animated.View>
 
         {/* FEATURED CAROUSEL — use FeaturedCard component in renderItem */}

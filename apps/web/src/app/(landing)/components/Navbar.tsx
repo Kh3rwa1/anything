@@ -54,7 +54,16 @@ export function Navbar({
           </a>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
+          <button
+            onClick={onThemeToggle}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className={`grid size-10 place-items-center rounded-xl border transition-all duration-300 hover:-translate-y-0.5 ${
+              isDark ? 'bg-white/[0.04] border-white/[0.1] text-amber-300' : 'bg-slate-50 border-slate-200 text-indigo-600'
+            }`}
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           {showInstallBtn && (
             <button
               onClick={onInstallClick}

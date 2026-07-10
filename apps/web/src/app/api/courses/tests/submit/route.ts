@@ -1,4 +1,5 @@
 import { createAdminClient, DATABASE_ID, COLLECTIONS } from '@/lib/appwrite';
+import { Query } from 'node-appwrite';
 import { requireSession, readJsonObject } from '@/lib/api-security';
 import { mockDB } from '@/lib/mock-db';
 
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     const body = await readJsonObject(request);
     const { test_id, answers } = body as { test_id: string; answers: Record<string, number> };
 
-    if (!test_id || !answers) {
+    if (!test_id || !answers || typeof answers !== 'object' || Array.isArray(answers) || Object.keys(answers).length > 200) {
       return Response.json({ error: 'test_id and answers are required' }, { status: 400 });
     }
 
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     let testTitle = 'Mock Test';
     let courseId = '';
 
-    // First try mockDB to see if test exists there (so we can get course_id)
+    // Use local data only in development; production always resolves the authoritative test.
     const localTest = mockDB.getMockTest(test_id);
     if (localTest) {
       testTitle = localTest.title;
@@ -39,14 +40,28 @@ export async function POST(request: Request) {
         } catch {}
       }
 
-      // Fetch questions from Appwrite
+      if (!courseId) {
+        return Response.json({ error: 'Test not found' }, { status: 404 });
+      }
+
+      if (access.session.user.role !== 'admin') {
+        const enrollment = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+          Query.equal('user_id', userId),
+          Query.equal('course_id', courseId),
+          Query.limit(1),
+        ]);
+        if (enrollment.total === 0) {
+          return Response.json({ error: 'Enroll in this course to submit its mock test.' }, { status: 403 });
+        }
+      }
+
+      // Fetch only this test's questions. Filtering a default page in memory caused
+      // incorrect scores once a question collection grew beyond one page.
       const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.QUESTIONS, [
-        // Query.equal('test_id', test_id)
-        // Note: query string might need adjustment depending on index
+        Query.equal('test_id', test_id),
+        Query.limit(100),
       ]);
-      // Filter manually just in case index is missing
       questions = response.documents
-        .filter(doc => doc.test_id === test_id)
         .map(doc => ({
           id: doc.$id,
           correct_index: doc.correct_index,

@@ -6,6 +6,7 @@ interface FeaturesProps {
 }
 
 export function Features({ theme }: FeaturesProps) {
+  const { isDark } = theme;
   return (
     <section id="features" className="py-28 px-6 scroll-mt-20 relative">
       <div className="max-w-6xl mx-auto relative z-10">
@@ -25,13 +26,14 @@ export function Features({ theme }: FeaturesProps) {
           {FEATURES.map((f, i) => (
             <div
               key={i}
-              className="group p-8 bg-white border border-slate-200 hover:border-indigo-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/[0.03] rounded-3xl transition-all duration-300 shadow-sm"
+              className={`premium-lift group p-8 border rounded-3xl transition-all duration-300 shadow-sm ${theme.featureCard}`}
+              style={{ transitionDelay: `${i * 45}ms` }}
             >
-              <div className="w-14 h-14 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,91,255,0.1)] transition-all duration-300">
+              <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl mb-6 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(99,91,255,0.1)] transition-all duration-300 ${isDark ? 'bg-indigo-400/10 border-indigo-300/10' : 'bg-indigo-50 border-indigo-100'}`}>
                 {f.icon}
               </div>
-              <h3 className="font-extrabold text-slate-900 text-lg mb-3 tracking-tight">{f.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">{f.desc}</p>
+              <h3 className={`font-extrabold text-lg mb-3 tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{f.title}</h3>
+              <p className={`text-sm leading-relaxed font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{f.desc}</p>
             </div>
           ))}
         </div>

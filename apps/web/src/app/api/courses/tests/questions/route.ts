@@ -15,6 +15,7 @@ export async function GET(request: Request) {
 
     const access = await requireSession();
     if (!access.ok) return access.response;
+    const userId = access.session.user.id;
 
     let questions: any[] = [];
     try {
@@ -37,9 +38,30 @@ export async function GET(request: Request) {
       questions = mockDB.getQuestions(testId);
     }
 
-    // Anti-cheat protection: if the student is taking the test (not reviewing it),
-    // strip the correct answer and explanations from the payload!
-    if (!isReview) {
+    // Answers are available only to administrators or after the learner has completed
+    // this specific test. A query parameter alone must never unlock answer keys.
+    let canReview = access.session.user.role === 'admin';
+    if (isReview && !canReview) {
+      try {
+        const { databases } = createAdminClient();
+        const attempts = await databases.listDocuments(DATABASE_ID, COLLECTIONS.TEST_ATTEMPTS, [
+          Query.equal('user_id', userId),
+          Query.equal('test_id', testId),
+          Query.limit(1),
+        ]);
+        canReview = attempts.total > 0;
+      } catch (dbErr) {
+        if (process.env.NODE_ENV === 'production') throw dbErr;
+        canReview = mockDB.getAttempts(userId).some((attempt) => String(attempt.test_id) === String(testId));
+      }
+    }
+
+    if (isReview && !canReview) {
+      return Response.json({ error: 'Complete this test before reviewing answers.' }, { status: 403 });
+    }
+
+    // Anti-cheat protection: strip the correct answer and explanations while taking a test.
+    if (!canReview) {
       questions = questions.map(q => ({
         id: q.id,
         test_id: q.test_id,

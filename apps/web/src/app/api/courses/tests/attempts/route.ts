@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     try {
       const { databases } = createAdminClient();
       const queries = [Query.equal('user_id', userId)];
-      if (courseId) {
+      if (courseId && courseId !== 'all') {
         queries.push(Query.equal('course_id', courseId));
       }
       queries.push(Query.orderDesc('completed_at'));
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     } catch (dbErr) {
       if (process.env.NODE_ENV === 'production') throw dbErr;
       console.warn('Appwrite attempts fetch failed, using local mockDB fallback', dbErr);
-      const attempts = mockDB.getAttempts(userId, courseId || undefined);
+      const attempts = mockDB.getAttempts(userId, courseId && courseId !== 'all' ? courseId : undefined);
       return Response.json(attempts);
     }
   } catch (error) {

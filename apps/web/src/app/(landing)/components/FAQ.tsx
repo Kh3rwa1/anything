@@ -29,13 +29,14 @@ export function FAQ({ theme }: FAQProps) {
             return (
               <div
                 key={i}
-                className={`${theme.faqRow} border rounded-2xl overflow-hidden transition-colors duration-200`}
+                className={`premium-lift ${theme.faqRow} border rounded-2xl overflow-hidden transition-all duration-300`}
+                style={{ transitionDelay: `${i * 40}ms` }}
               >
                 <button
                   onClick={() => setActiveFaq(isOpen ? null : i)}
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${i}`}
-                  className="w-full text-left p-6 flex items-center justify-between gap-4"
+                  className="w-full text-left p-6 flex items-center justify-between gap-4 transition-colors hover:bg-indigo-500/[0.025]"
                 >
                   <span className={`font-extrabold ${theme.faqQuestion} text-base sm:text-lg`}>{faq.q}</span>
                   <ChevronDown

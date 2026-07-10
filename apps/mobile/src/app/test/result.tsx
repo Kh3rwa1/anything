@@ -21,9 +21,10 @@ interface AttemptDetails {
   id: string;
   test_id: string;
   score: number;
-  correct_answers: number;
+  correct_answers?: number;
+  correct_count?: number;
   total_questions: number;
-  answers: { questionId: string; selectedOptionIndex: number }[];
+  answers?: Record<string, number> | { questionId: string; selectedOptionIndex: number }[];
 }
 
 interface Question {
@@ -96,8 +97,12 @@ export default function TestResultScreen() {
     );
   }
 
-  const wrongAnswers = attempt.total_questions - attempt.correct_answers;
+  const correctAnswers = Number(attempt.correct_count ?? attempt.correct_answers ?? 0);
+  const wrongAnswers = attempt.total_questions - correctAnswers;
   const passed = attempt.score >= 50;
+  const answerMap = Array.isArray(attempt.answers)
+    ? Object.fromEntries(attempt.answers.map((answer) => [answer.questionId, answer.selectedOptionIndex]))
+    : attempt.answers ?? {};
 
   return (
     <View style={themeStyle({ flex: 1, backgroundColor: '#0A0A0F', paddingTop: insets.top })}>
@@ -170,7 +175,7 @@ export default function TestResultScreen() {
             <View style={themeStyle({ flexDirection: 'row', gap: 16, width: '100%' })}>
               <View style={themeStyle({ flex: 1, backgroundColor: '#11111E', borderRadius: 16, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#2D2D4E' })}>
                 <CheckCircle2 size={16} color="#10B981" style={{ marginBottom: 4 }} />
-                <Text style={themeStyle({ fontWeight: '800', fontSize: 15, color: '#FFFFFF' })}>{attempt.correct_answers}</Text>
+                <Text style={themeStyle({ fontWeight: '800', fontSize: 15, color: '#FFFFFF' })}>{correctAnswers}</Text>
                 <Text style={themeStyle({ fontWeight: '500', fontSize: 10, color: '#4B5563', textTransform: 'uppercase', marginTop: 2 })}>Correct</Text>
               </View>
 
@@ -215,8 +220,8 @@ export default function TestResultScreen() {
 
           <View style={themeStyle({ gap: 16 })}>
             {questions.map((q, idx) => {
-              const studentAnswer = attempt.answers.find((a) => String(a.questionId) === String(q.id));
-              const selectedIdx = studentAnswer ? studentAnswer.selectedOptionIndex : -1;
+              const selectedAnswer = answerMap[q.id];
+              const selectedIdx = typeof selectedAnswer === 'number' ? selectedAnswer : -1;
               const isCorrect = selectedIdx === q.correct_index;
 
               return (

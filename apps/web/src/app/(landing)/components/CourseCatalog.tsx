@@ -70,11 +70,13 @@ export function CourseCatalog({ theme }: CourseCatalogProps) {
             {COURSES.map((c, i) => (
               <div
                 key={i}
-                className="group border border-slate-200 hover:border-indigo-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/[0.03] rounded-3xl overflow-hidden transition-all duration-300 bg-white"
+                className={`premium-lift group border rounded-3xl overflow-hidden transition-all duration-300 ${theme.catalogCard}`}
+                style={{ transitionDelay: `${i * 60}ms` }}
               >
                 {/* Course Header Image */}
-                <div className="h-40 bg-slate-50 border-b border-slate-100 flex flex-col items-center justify-center relative p-6">
-                  <div className="w-12 h-12 bg-white border border-slate-200 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg mb-2 shadow-sm">
+                <div className={`relative h-40 overflow-hidden border-b flex flex-col items-center justify-center p-6 ${isDark ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-slate-50 border-slate-100'}`}>
+                  <div className="absolute -right-8 -top-8 size-32 rounded-full bg-indigo-400/10 blur-2xl transition-transform duration-500 group-hover:scale-150" />
+                  <div className={`relative w-12 h-12 border text-indigo-600 rounded-xl flex items-center justify-center font-bold text-lg mb-2 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 ${isDark ? 'bg-white/[0.06] border-white/[0.1]' : 'bg-white border-slate-200'}`}>
                     {c.emoji}
                   </div>
                   <span
@@ -88,7 +90,7 @@ export function CourseCatalog({ theme }: CourseCatalogProps) {
                   <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-1.5">
                     {c.cat}
                   </p>
-                  <h3 className="font-extrabold text-slate-900 text-xl mb-4 leading-snug tracking-tight">
+                  <h3 className={`font-extrabold text-xl mb-4 leading-snug tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {c.title}
                   </h3>
 
@@ -104,8 +106,8 @@ export function CourseCatalog({ theme }: CourseCatalogProps) {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-5">
-                    <span className="text-xl font-black text-slate-900">{c.price}</span>
+                  <div className={`flex items-center justify-between border-t pt-5 ${isDark ? 'border-white/[0.07]' : 'border-slate-100'}`}>
+                    <span className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{c.price}</span>
                     <Link
                       href={ctaLink}
                       className="px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 active:scale-95 shadow-sm"

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Zap } from 'lucide-react';
+import { ArrowRight, Check, Play, Sparkles, Zap } from 'lucide-react';
 import type { ThemeClasses } from './use-theme-classes';
 import { STATS } from './constants';
 import { useSession } from '@/lib/auth-client';
@@ -27,19 +27,22 @@ export function Hero({ theme, onInstallClick }: HeroProps) {
   }
 
   return (
-    <section className="pt-40 pb-28 px-6 relative">
-      <div className="max-w-5xl mx-auto text-center relative z-10">
+    <section className="landing-hero pt-36 sm:pt-44 pb-24 sm:pb-32 px-6 relative isolate">
+      <div className="hero-orb hero-orb-one" />
+      <div className="hero-orb hero-orb-two" />
+      <div className="hero-grid absolute inset-x-0 top-0 h-[620px] -z-10 opacity-70" />
+      <div className="max-w-6xl mx-auto text-center relative z-10">
         {/* Accent Pill */}
-        <div className="inline-flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/20 text-brand-primary dark:text-brand-primary text-[10px] sm:text-xs font-black tracking-widest uppercase px-4 py-2 rounded-full mb-8 shadow-[0_0_15px_rgba(99,91,255,0.05)] animate-hero-fade-up">
+        <div className="hero-status inline-flex items-center gap-2 text-[10px] sm:text-xs font-black tracking-widest uppercase px-4 py-2 rounded-full mb-7 animate-hero-fade-up">
           <Zap className="w-3.5 h-3.5 fill-brand-primary/60 text-brand-primary" />
           Simple Learning & Job Prep App
         </div>
 
         {/* Main Title */}
-        <h1 className={`text-4xl sm:text-6xl md:text-8xl font-black ${isDark ? 'text-white' : 'text-slate-900'} tracking-tighter leading-[1.02] mb-8 select-none animate-hero-fade-up [animation-delay:150ms]`}>
+        <h1 className={`text-4xl sm:text-6xl md:text-[5.5rem] lg:text-[6.4rem] font-black ${isDark ? 'text-white' : 'text-slate-950'} tracking-[-0.065em] leading-[0.94] mb-8 select-none animate-hero-fade-up [animation-delay:150ms]`}>
           Aapki Job Prep
           <br />
-          <span className="text-indigo-600">
+          <span className="hero-gradient-text">
             Ab Aur Bhi Aasan!
           </span>
         </h1>
@@ -50,29 +53,36 @@ export function Hero({ theme, onInstallClick }: HeroProps) {
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20 animate-hero-fade-up [animation-delay:450ms]">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-7 animate-hero-fade-up [animation-delay:450ms]">
           <Link
             href={ctaLink}
-            className="inline-flex items-center gap-2.5 px-8 py-4 text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all duration-200 shadow-sm active:scale-95 group"
+            className="premium-primary inline-flex items-center gap-2.5 px-7 py-3.5 text-sm sm:text-base font-bold text-white rounded-2xl active:scale-[0.98] group"
           >
             {ctaText}
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
           <button
             onClick={onInstallClick}
-            className="px-8 py-4 text-base font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all duration-200"
+            className={`premium-secondary inline-flex items-center gap-2.5 px-7 py-3.5 text-sm sm:text-base font-bold rounded-2xl active:scale-[0.98] ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
           >
+            <Play className="w-4 h-4 fill-current" />
             Install PWA Client
           </button>
         </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold text-slate-500 mb-16 animate-hero-fade-up [animation-delay:520ms]">
+          {['Learn at your pace', 'Mock tests included', 'Works on every phone'].map((item) => (
+            <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" />{item}</span>
+          ))}
+        </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto reveal-on-scroll">
+        <div className="hero-stat-shell grid grid-cols-2 md:grid-cols-4 gap-px max-w-4xl mx-auto reveal-on-scroll">
           {STATS.map((s, i) => (
             <div
               key={i}
-              className={`${theme.card} border rounded-2xl px-6 py-5 text-center backdrop-blur-md transition-all duration-200`}
+              className={`hero-stat ${theme.card} px-5 sm:px-6 py-5 text-center backdrop-blur-md transition-all duration-300`}
             >
+              <div className="mx-auto mb-2 grid size-7 place-items-center rounded-lg bg-indigo-500/10 text-indigo-600"><Sparkles className="size-3.5" /></div>
               <p className={`text-xl sm:text-2xl font-black ${isDark ? 'text-white' : 'text-slate-900'}`}>{s.val}</p>
               <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-wider">{s.label}</p>
             </div>

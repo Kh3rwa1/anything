@@ -57,7 +57,7 @@ export function AppPreview({ theme }: AppPreviewProps) {
                     key={tab.id}
                     onClick={() => setMockAppTab(tab.id)}
                     aria-expanded={isActive}
-                    className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 ${
+                    className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 hover:translate-x-1 ${
                       isActive
                         ? theme.tabButtonActive
                         : theme.tabButtonInactive
@@ -86,7 +86,7 @@ export function AppPreview({ theme }: AppPreviewProps) {
 
           {/* Clean Feature Dashboard Preview Card */}
           <div className="order-1 lg:order-2 flex justify-center">
-            <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-md shadow-slate-100/50">
+            <div className="premium-lift w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-md shadow-slate-100/50">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                 <div>
                   <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Mobile Companion App</span>
@@ -96,14 +96,14 @@ export function AppPreview({ theme }: AppPreviewProps) {
               </div>
 
               <div className="space-y-3">
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                <div className="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50/40">
                   <div>
                     <p className="text-xs font-bold text-slate-800">1. Welcome & Jharkhand Govt Syllabus</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">Syllabus intro · 8m</p>
                   </div>
                   <CheckCircle size={16} className="text-emerald-500" />
                 </div>
-                <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                <div className="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50/40">
                   <div>
                     <p className="text-xs font-bold text-slate-800">2. Time & Work Shortcut Theorems</p>
                     <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Aptitude core · 22m</p>

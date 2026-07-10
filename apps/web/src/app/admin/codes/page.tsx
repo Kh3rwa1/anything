@@ -189,7 +189,7 @@ export default function CodesPage() {
   const totalUses = codes.reduce((acc, c) => acc + c.used_count, 0);
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="admin-page max-w-5xl space-y-6">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>

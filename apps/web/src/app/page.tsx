@@ -30,6 +30,13 @@ export default function LandingPage() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // The website remains fully usable when service worker registration is unavailable.
+    });
+  }, []);
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -59,7 +66,7 @@ export default function LandingPage() {
   const tc = useThemeClasses(isDark);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans overflow-hidden selection:bg-indigo-600/30 selection:text-white relative">
+    <div className={`landing-shell min-h-screen ${tc.bg} font-sans overflow-hidden selection:bg-indigo-600/30 selection:text-white relative transition-colors duration-500`}>
       <Navbar
         theme={tc}
         mobileMenuOpen={mobileMenuOpen}

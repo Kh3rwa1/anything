@@ -32,7 +32,12 @@ function StatPill({
         paddingVertical: 14,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2D2D4E',
+        borderColor: `${color}35`,
+        shadowColor: color,
+        shadowOpacity: 0.13,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
+        elevation: 3,
         opacity: anim,
         transform: [{ scale: anim }],
       })}

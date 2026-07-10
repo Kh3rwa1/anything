@@ -75,11 +75,12 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="admin-page space-y-6 max-w-7xl">
       {/* Header */}
       <div>
-        <p className="text-sm font-medium text-slate-500 mb-1">Data & Insights</p>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Analytics</h1>
+        <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-600"><span className="h-px w-5 bg-violet-500" />Data & Insights</p>
+        <h1 className="text-3xl font-semibold text-slate-950 tracking-[-0.045em]">Analytics</h1>
+        <p className="mt-2 text-sm text-slate-500">A concise view of the metrics that move your academy.</p>
       </div>
 
       {/* KPI Cards */}
@@ -87,7 +88,8 @@ export default function AnalyticsPage() {
         {kpis.map((k, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-sm transition-all"
+            className="premium-lift bg-white rounded-2xl border border-slate-200 p-5 transition-all"
+            style={{ transitionDelay: `${i * 45}ms` }}
           >
             <div className="flex items-center justify-between mb-3">
               <div className={`w-10 h-10 ${k.bg} rounded-xl flex items-center justify-center`}>
@@ -106,7 +108,7 @@ export default function AnalyticsPage() {
       {/* Revenue Chart + Traffic */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Bar Chart */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="admin-glass-card xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-base font-bold text-slate-900">Monthly Revenue</h2>
@@ -137,7 +139,7 @@ export default function AnalyticsPage() {
               {monthly.map((m, i) => {
                 const h = maxRev > 0 ? Math.round((m.revenue / maxRev) * 100) : 0;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div key={i} className="group flex-1 flex flex-col items-center gap-2">
                     <span className="text-[10px] font-bold text-indigo-600">
                       {fmtInr(m.revenue)}
                     </span>
@@ -145,7 +147,7 @@ export default function AnalyticsPage() {
                       className="w-full relative rounded-t-lg overflow-hidden"
                       style={{ height: `${Math.max(h, 5)}%` }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-t from-indigo-600 to-violet-500 rounded-t-lg" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-indigo-600 via-violet-500 to-fuchsia-400 rounded-t-lg transition duration-300 group-hover:brightness-110" />
                     </div>
                     <span className="text-[10px] font-semibold text-slate-400">{m.month}</span>
                   </div>
@@ -173,7 +175,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Traffic Sources — placeholder */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="admin-glass-card bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-5">
             <PieChart className="w-4 h-4 text-slate-400" />
             <h2 className="text-base font-bold text-slate-900">Traffic Sources</h2>
@@ -189,7 +191,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Courses Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="admin-glass-card bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100">
           <h2 className="text-base font-bold text-slate-900">Top Performing Courses</h2>
           <p className="text-sm text-slate-500 mt-0.5">By enrollment count</p>

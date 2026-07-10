@@ -246,7 +246,7 @@ export default function AdminTestsPage() {
     : tests.filter(t => String(t.course_id) === String(selectedCourse));
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+    <div className="admin-page space-y-6 p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Mock Tests Management</h1>

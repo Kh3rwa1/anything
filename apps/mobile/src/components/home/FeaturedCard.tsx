@@ -26,6 +26,13 @@ function FeaturedCard({ item, onPress }: { item: Course; onPress: () => void }) 
           overflow: 'hidden',
           height: 220,
           transform: [{ scale: cardScale }],
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.13)',
+          shadowColor: '#4F46E5',
+          shadowOpacity: 0.28,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 10 },
+          elevation: 8,
         })}
       >
         <Image
@@ -37,6 +44,10 @@ function FeaturedCard({ item, onPress }: { item: Course; onPress: () => void }) 
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.9)']}
           style={themeStyle({ position: 'absolute', bottom: 0, left: 0, right: 0, height: '70%' })}
+        />
+        <LinearGradient
+          colors={['rgba(129,140,248,0.24)', 'transparent']}
+          style={themeStyle({ position: 'absolute', top: 0, left: 0, right: 0, height: '45%' })}
         />
 
         <View
@@ -69,11 +80,11 @@ function FeaturedCard({ item, onPress }: { item: Course; onPress: () => void }) 
             width: 36,
             height: 36,
             borderRadius: 18,
-            backgroundColor: 'rgba(255,255,255,0.2)',
+            backgroundColor: 'rgba(255,255,255,0.16)',
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.3)',
+            borderColor: 'rgba(255,255,255,0.42)',
           })}
         >
           <Play size={14} color="#FFFFFF" fill="#FFFFFF" />

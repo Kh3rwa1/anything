@@ -286,7 +286,7 @@ export default function AdminCourses() {
       : 0;
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="admin-page space-y-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>

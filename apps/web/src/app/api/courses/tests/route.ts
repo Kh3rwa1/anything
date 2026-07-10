@@ -14,6 +14,34 @@ export async function GET(request: Request) {
     const access = await requireSession();
     if (!access.ok) return access.response;
 
+    let enrolledCourseIds: Set<string> | null = null;
+    if (courseId === 'all' && access.session.user.role !== 'admin') {
+      try {
+        const { databases } = createAdminClient();
+        const enrollments = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+          Query.equal('user_id', access.session.user.id),
+          Query.limit(100),
+        ]);
+        enrolledCourseIds = new Set(enrollments.documents.map((enrollment) => String(enrollment.course_id)));
+      } catch (dbErr) {
+        if (process.env.NODE_ENV === 'production') throw dbErr;
+      }
+    } else if (courseId !== 'all' && access.session.user.role !== 'admin') {
+      try {
+        const { databases } = createAdminClient();
+        const enrollment = await databases.listDocuments(DATABASE_ID, COLLECTIONS.ENROLLMENTS, [
+          Query.equal('user_id', access.session.user.id),
+          Query.equal('course_id', courseId),
+          Query.limit(1),
+        ]);
+        if (enrollment.total === 0) {
+          return Response.json({ error: 'Enroll in this course to access its mock tests.' }, { status: 403 });
+        }
+      } catch (dbErr) {
+        if (process.env.NODE_ENV === 'production') throw dbErr;
+      }
+    }
+
     try {
       const { databases } = createAdminClient();
       const queries = [];
@@ -23,7 +51,9 @@ export async function GET(request: Request) {
       queries.push(Query.limit(100));
 
       const response = await databases.listDocuments(DATABASE_ID, COLLECTIONS.MOCK_TESTS, queries);
-      const tests = response.documents.map(doc => ({
+      const tests = response.documents
+        .filter((doc) => !enrolledCourseIds || enrolledCourseIds.has(String(doc.course_id)))
+        .map(doc => ({
         id: doc.$id,
         course_id: doc.course_id,
         title: doc.title,
